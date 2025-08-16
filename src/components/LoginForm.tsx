@@ -12,6 +12,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onToggleForm, onLogin }: LoginFormProps) {
   const [email, setEmail] = useState("");
+  const [usrname,setUsrname] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,11 +44,11 @@ export function LoginForm({ onToggleForm, onLogin }: LoginFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="text">Email or Username</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Enter your email or username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

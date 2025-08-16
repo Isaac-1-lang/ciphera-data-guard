@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import { DashboardLayout } from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
+import  SettingsPage from "@/components/Settings";
+import AnalyticsDashboard from "@/components/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -81,10 +83,7 @@ const App = () => {
                   path="/analytics" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Analytics</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <AnalyticsDashboard/>
                     </DashboardLayout>
                   } 
                 />
@@ -125,10 +124,7 @@ const App = () => {
                   path="/settings" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Settings</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <SettingsPage/>
                     </DashboardLayout>
                   } 
                 />

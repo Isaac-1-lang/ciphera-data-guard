@@ -68,19 +68,6 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-
-        <Card className="bg-gradient-card shadow-card hover:shadow-elegant transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-accent">3 active</span> right now
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Content Grid */}

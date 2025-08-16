@@ -33,7 +33,7 @@ const mainItems = [
 
 const managementItems = [
   { title: "Reports", url: "/reports", icon: FileText },
-  { title: "Team", url: "/team", icon: Users },
+  { title: "Awareness", url: "/educ", icon: Users },
   { title: "Alerts", url: "/alerts", icon: AlertTriangle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
@@ -73,9 +73,10 @@ export function AppSidebar() {
 
       <SidebarContent className="p-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            {!collapsed && "Main"}
-          </SidebarGroupLabel>
+         <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider mb-2 text-gray-500 dark:text-gray-300">
+  {!collapsed && "Main"}
+</SidebarGroupLabel>
+
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {mainItems.map((item) => (
