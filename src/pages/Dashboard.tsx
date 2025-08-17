@@ -22,8 +22,26 @@ import {
   Star,
   Sparkles
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  
+  // Get user's display name (firstName + lastName or username as fallback)
+  const getDisplayName = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user?.username || user?.firstName || user?.lastName || 'User';
+  };
+
+  // Get user's initials for avatar
+  const getInitials = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    }
+    return user?.username?.charAt(0).toUpperCase() || 'U';
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 p-6 space-y-8">
       {/* Hero Welcome Section */}
@@ -37,9 +55,19 @@ export default function Dashboard() {
             <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
               <Shield className="h-8 w-8" />
             </div>
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Welcome back, User!</h1>
-              <p className="text-blue-100 text-lg">Your data security fortress is running smoothly today</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">
+                  Welcome back, <span className="text-yellow-300">{getDisplayName()}</span>!
+                </h1>
+                <p className="text-blue-100 text-lg">Your data security fortress is running smoothly today</p>
+              </div>
+              <Avatar className="h-16 w-16 border-2 border-white/30 shadow-lg">
+                <AvatarImage src="" alt={getDisplayName()} />
+                <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
           
@@ -142,7 +170,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
         {/* Recent Activity */}
         <Card className="xl:col-span-2 border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="border-b border-gray-100">
@@ -284,6 +312,64 @@ export default function Dashboard() {
               <Eye className="h-4 w-4 mr-2" />
               View Detailed Report
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* User Profile Section */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl">
+                <Users className="h-6 w-6 text-indigo-600" />
+              </div>
+              Your Profile
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Account information and settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 mb-6">
+              <Avatar className="h-20 w-20 border-4 border-indigo-100 shadow-lg">
+                <AvatarImage src="" alt={getDisplayName()} />
+                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-2xl font-bold">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{getDisplayName()}</h3>
+                <p className="text-gray-600 mb-2">{user?.email}</p>
+                <Badge variant="outline" className="border-indigo-200 text-indigo-700">
+                  {user?.role || 'User'}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Account Status</div>
+                <div className="text-green-600 font-semibold">
+                  {user?.isActive ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-700">Last Login</div>
+                <div className="text-gray-600">
+                  {user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1">
+                <Eye className="h-4 w-4 mr-2" />
+                View Profile
+              </Button>
+              <Button variant="outline" size="sm" className="flex-1">
+                <Zap className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

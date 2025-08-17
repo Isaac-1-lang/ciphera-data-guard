@@ -4,28 +4,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginFormProps {
   onToggleForm: () => void;
-  onLogin: (email: string, password: string) => void;
 }
 
-export function LoginForm({ onToggleForm, onLogin }: LoginFormProps) {
+export function LoginForm({ onToggleForm }: LoginFormProps) {
   const [email, setEmail] = useState("");
-  const [usrname,setUsrname] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate login process
-    setTimeout(() => {
-      onLogin(email, password);
-      setIsLoading(false);
-    }, 1000);
+    await login(email, password);
   };
 
   return (

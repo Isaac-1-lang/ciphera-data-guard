@@ -4,35 +4,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface RegisterFormProps {
   onToggleForm: () => void;
-  onRegister: (name: string, email: string, password: string) => void;
 }
 
-export function RegisterForm({ onToggleForm, onRegister }: RegisterFormProps) {
-  const [name, setName] = useState("");
+export function RegisterForm({ onToggleForm }: RegisterFormProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      toast({
+        title: "Error",
+        description: "Passwords don't match!",
+        variant: "destructive",
+      });
       return;
     }
     
-    setIsLoading(true);
-    
-    // Simulate registration process
-    setTimeout(() => {
-      onRegister(name, email, password);
-      setIsLoading(false);
-    }, 1000);
+    await register({
+      username,
+      email,
+      password,
+      firstName,
+      lastName,
+    });
   };
 
   return (
@@ -51,13 +59,37 @@ export function RegisterForm({ onToggleForm, onRegister }: RegisterFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input
-              id="name"
+              id="firstName"
               type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="bg-background/50 border-border/60 focus:border-accent"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Enter your last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="bg-background/50 border-border/60 focus:border-accent"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="bg-background/50 border-border/60 focus:border-accent"
             />

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { apiService } from '@/lib/api';
 import { 
   History, 
   Search, 
@@ -23,68 +25,44 @@ import {
 export default function HistoryComponent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { toast } = useToast();
 
-  // Mock history data
-  const historyData = [
-    {
-      id: 1,
-      timestamp: '2024-01-15 14:30:25',
-      type: 'Text Scan',
-      content: 'Email content analysis for marketing campaign',
-      status: 'completed',
-      threats: 2,
-      severity: 'high',
-      scanTime: '1.8s',
-      size: '2.3 KB'
-    },
-    {
-      id: 2,
-      timestamp: '2024-01-15 13:45:12',
-      type: 'File Scan',
-      content: 'financial_report_2024.pdf',
-      status: 'completed',
-      threats: 1,
-      severity: 'critical',
-      scanTime: '4.2s',
-      size: '2.1 MB'
-    },
-    {
-      id: 3,
-      timestamp: '2024-01-15 12:20:08',
-      type: 'Text Scan',
-      content: 'API prompt for customer service bot',
-      status: 'completed',
-      threats: 0,
-      severity: 'none',
-      scanTime: '0.9s',
-      size: '856 B'
-    },
-    {
-      id: 4,
-      timestamp: '2024-01-15 11:15:33',
-      type: 'File Scan',
-      content: 'employee_data.xlsx',
-      status: 'completed',
-      threats: 3,
-      severity: 'high',
-      scanTime: '3.7s',
-      size: '1.8 MB'
-    },
-    {
-      id: 5,
-      timestamp: '2024-01-15 10:30:45',
-      type: 'Text Scan',
-      content: 'Social media post content',
-      status: 'completed',
-      threats: 1,
-      severity: 'medium',
-      scanTime: '1.2s',
-      size: '1.2 KB'
+  useEffect(() => {
+    loadHistoryData();
+    loadStats();
+  }, [currentPage]);
+
+  const loadHistoryData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiService.getScanHistory(currentPage, 10);
+      setHistoryData(response.docs || response.data || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load scan history",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
-  const toggleExpanded = (id: number) => {
+  const loadStats = async () => {
+    try {
+      const response = await apiService.getScanStats();
+      setStats(response);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
+
+  const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -121,11 +99,11 @@ export default function HistoryComponent() {
   };
 
   const filteredData = historyData.filter(item => {
-    const matchesSearch = item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.type.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (item.content || item.fileName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.type || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || 
-                         (selectedFilter === 'threats' && item.threats > 0) ||
-                         (selectedFilter === 'clean' && item.threats === 0);
+                         (selectedFilter === 'threats' && (item.threats?.length || 0) > 0) ||
+                         (selectedFilter === 'clean' && (item.threats?.length || 0) === 0);
     return matchesSearch && matchesFilter;
   });
 
@@ -148,58 +126,58 @@ export default function HistoryComponent() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
-            <div className="p-3 bg-blue-100 rounded-xl w-fit mx-auto mb-4">
-              <BarChart3 className="h-8 w-8 text-blue-600" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl w-fit mx-auto mb-4">
+              <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">1,247</h3>
-            <p className="text-gray-600">Total Scans</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.totalScans || 0}</h3>
+            <p className="text-muted-foreground">Total Scans</p>
           </CardContent>
         </Card>
         
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
-            <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl w-fit mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">892</h3>
-            <p className="text-gray-600">Clean Scans</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.cleanScans || 0}</h3>
+            <p className="text-muted-foreground">Clean Scans</p>
           </CardContent>
         </Card>
         
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
-            <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
+            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl w-fit mx-auto mb-4">
+              <AlertTriangle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">355</h3>
-            <p className="text-gray-600">Threats Detected</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.threatsDetected || 0}</h3>
+            <p className="text-muted-foreground">Threats Detected</p>
           </CardContent>
         </Card>
         
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
-            <div className="p-3 bg-purple-100 rounded-xl w-fit mx-auto mb-4">
-              <Clock className="h-8 w-8 text-purple-600" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl w-fit mx-auto mb-4">
+              <Clock className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">2.1s</h3>
-            <p className="text-gray-600">Avg Scan Time</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.avgScanTime || '0ms'}</h3>
+            <p className="text-muted-foreground">Avg Scan Time</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search and Filters */}
-      <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+      <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4 items-center">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Search scan history..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3 rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="pl-10 pr-4 py-3 rounded-xl"
               />
             </div>
             
@@ -207,7 +185,7 @@ export default function HistoryComponent() {
               <select
                 value={selectedFilter}
                 onChange={(e) => setSelectedFilter(e.target.value)}
-                className="px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                className="px-4 py-3 rounded-xl border border-border focus:border-accent focus:ring-accent bg-background"
               >
                 <option value="all">All Scans</option>
                 <option value="threats">With Threats</option>
@@ -219,7 +197,7 @@ export default function HistoryComponent() {
                 Advanced
               </Button>
               
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl">
+              <Button className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-6 py-3 rounded-xl">
                 <Download className="h-5 w-5 mr-2" />
                 Export
               </Button>
@@ -229,125 +207,137 @@ export default function HistoryComponent() {
       </Card>
 
       {/* History List */}
-      <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+      <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
-              <FileText className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl">
+              <FileText className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             Recent Scans
           </CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardDescription className="text-muted-foreground">
             Your latest data protection activities and results
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="space-y-2">
-            {filteredData.map((item) => (
-              <div key={item.id} className="border border-gray-200 rounded-xl overflow-hidden">
-                {/* Main Row */}
-                <div className="p-4 hover:bg-gray-50 transition-colors duration-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading scan history...</p>
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="p-8 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No scan history found</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredData.map((item) => (
+                <div key={item._id || item.id} className="border border-border rounded-xl overflow-hidden">
+                  {/* Main Row */}
+                  <div className="p-4 hover:bg-muted/50 transition-colors duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(item.status)}
+                          <div className="text-left">
+                            <div className="flex items-center gap-3 mb-1">
+                              <Badge variant="outline" className="font-medium">
+                                {item.type}
+                              </Badge>
+                              {getSeverityBadge(item.highestSeverity || 'none')}
+                            </div>
+                            <p className="font-medium text-foreground">{item.content || item.fileName}</p>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                {new Date(item.scanTime || item.createdAt).toLocaleString()}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {item.scanTime ? `${item.scanTime}ms` : 'N/A'}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <FileText className="h-4 w-4" />
+                                {item.fileSize || item.textLength || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
                       <div className="flex items-center gap-3">
-                        {getStatusIcon(item.status)}
-                        <div className="text-left">
-                          <div className="flex items-center gap-3 mb-1">
-                            <Badge variant="outline" className="font-medium">
-                              {item.type}
-                            </Badge>
-                            {getSeverityBadge(item.severity)}
-                          </div>
-                          <p className="font-medium text-gray-800">{item.content}</p>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {item.timestamp}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {item.scanTime}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <FileText className="h-4 w-4" />
-                              {item.size}
-                            </span>
-                          </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-foreground">{item.threats?.length || 0}</div>
+                          <div className="text-sm text-muted-foreground">threats</div>
                         </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleExpanded(item._id || item.id)}
+                          className="p-2 hover:bg-muted rounded-lg"
+                        >
+                          {expandedItems.has(item._id || item.id) ? (
+                            <ChevronUp className="h-5 w-5" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5" />
+                          )}
+                        </Button>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-800">{item.threats}</div>
-                        <div className="text-sm text-gray-500">threats</div>
-                      </div>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleExpanded(item.id)}
-                        className="p-2 hover:bg-gray-200 rounded-lg"
-                      >
-                        {expandedItems.has(item.id) ? (
-                          <ChevronUp className="h-5 w-5" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5" />
-                        )}
-                      </Button>
                     </div>
                   </div>
-                </div>
 
-                {/* Expanded Details */}
-                {expandedItems.has(item.id) && (
-                  <div className="border-t border-gray-200 bg-gray-50 p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3">Scan Details</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Scan ID:</span>
-                            <span className="font-mono">#{item.id.toString().padStart(6, '0')}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Status:</span>
-                            <span className="capitalize">{item.status}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Scan Time:</span>
-                            <span>{item.scanTime}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">File Size:</span>
-                            <span>{item.size}</span>
+                  {/* Expanded Details */}
+                  {expandedItems.has(item._id || item.id) && (
+                    <div className="border-t border-border bg-muted/30 p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-semibold text-foreground mb-3">Scan Details</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Scan ID:</span>
+                              <span className="font-mono">#{(item._id || item.id).toString().slice(-6)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Status:</span>
+                              <span className="capitalize">{item.status}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Scan Time:</span>
+                              <span>{item.scanTime ? `${item.scanTime}ms` : 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">File Size:</span>
+                              <span>{item.fileSize || item.textLength || 'N/A'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3">Actions</h4>
-                        <div className="flex flex-wrap gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
-                            <Download className="h-4 w-4 mr-2" />
-                            Download Report
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </Button>
+                        
+                        <div>
+                          <h4 className="font-semibold text-foreground mb-3">Actions</h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="outline">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <Download className="h-4 w-4 mr-2" />
+                              Download Report
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

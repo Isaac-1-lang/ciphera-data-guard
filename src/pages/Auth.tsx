@@ -3,22 +3,8 @@ import { LoginForm } from "@/components/LoginForm";
 import { RegisterForm } from "@/components/RegisterForm";
 import heroBg from "@/assets/hero-bg.jpg";
 
-interface AuthProps {
-  onLogin: () => void;
-}
-
-export default function Auth({ onLogin }: AuthProps) {
+export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-
-  const handleLogin = (email: string, password: string) => {
-    console.log("Login:", { email, password });
-    onLogin();
-  };
-
-  const handleRegister = (name: string, email: string, password: string) => {
-    console.log("Register:", { name, email, password });
-    onLogin(); // Auto-login after registration
-  };
 
   return (
     <div className="min-h-screen flex">
@@ -69,12 +55,10 @@ export default function Auth({ onLogin }: AuthProps) {
           {isLogin ? (
             <LoginForm 
               onToggleForm={() => setIsLogin(false)} 
-              onLogin={handleLogin}
             />
           ) : (
             <RegisterForm 
               onToggleForm={() => setIsLogin(true)} 
-              onRegister={handleRegister}
             />
           )}
         </div>

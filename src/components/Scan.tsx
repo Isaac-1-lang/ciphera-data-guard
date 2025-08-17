@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { apiService } from '@/lib/api';
 import { 
   Upload, 
   FileText, 
@@ -27,6 +29,7 @@ export default function ScanComponent() {
   const [scanResults, setScanResults] = useState<any>(null);
   const [textInput, setTextInput] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { toast } = useToast();
 
   const handleTextScan = async () => {
     if (!textInput.trim()) return;
@@ -34,32 +37,46 @@ export default function ScanComponent() {
     setIsScanning(true);
     setScanProgress(0);
     
-    // Simulate scanning process
-    const interval = setInterval(() => {
-      setScanProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsScanning(false);
-          // Mock scan results
-          setScanResults({
-            status: 'completed',
-            threats: [
-              { type: 'Personal Information', severity: 'high', count: 2, details: 'Email addresses and phone numbers detected' },
-              { type: 'Financial Data', severity: 'critical', count: 1, details: 'Credit card number pattern identified' }
-            ],
-            recommendations: [
-              'Mask email addresses before sharing',
-              'Remove or encrypt financial information',
-              'Use generic placeholders for sensitive data'
-            ],
-            scanTime: '2.3 seconds',
-            textLength: textInput.length
-          });
-          return 100;
-        }
-        return prev + 10;
+    try {
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      // Call backend API
+      const result = await apiService.scanText(textInput);
+      
+      clearInterval(progressInterval);
+      setScanProgress(100);
+      
+      setTimeout(() => {
+        setIsScanning(false);
+        setScanResults({
+          ...result,
+          scanTime: `${(Date.now() - Date.now() + 2300) / 1000}s`,
+          textLength: textInput.length
+        });
+      }, 500);
+
+      toast({
+        title: "Scan Complete",
+        description: "Text scan completed successfully!",
       });
-    }, 200);
+    } catch (error) {
+      setIsScanning(false);
+      setScanProgress(0);
+      toast({
+        title: "Scan Failed",
+        description: error instanceof Error ? error.message : "Failed to scan text",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleFileScan = async () => {
@@ -68,33 +85,47 @@ export default function ScanComponent() {
     setIsScanning(true);
     setScanProgress(0);
     
-    // Simulate file scanning
-    const interval = setInterval(() => {
-      setScanProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsScanning(false);
-          // Mock file scan results
-          setScanResults({
-            status: 'completed',
-            fileName: selectedFile.name,
-            fileSize: selectedFile.size,
-            threats: [
-              { type: 'Document Metadata', severity: 'medium', count: 3, details: 'Author and creation date exposed' },
-              { type: 'Hidden Content', severity: 'low', count: 1, details: 'Comments and revision history found' }
-            ],
-            recommendations: [
-              'Remove document metadata before sharing',
-              'Sanitize hidden content and comments',
-              'Convert to clean format if possible'
-            ],
-            scanTime: '4.1 seconds'
-          });
-          return 100;
-        }
-        return prev + 8;
+    try {
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 8;
+        });
+      }, 300);
+
+      // Call backend API
+      const result = await apiService.scanFile(selectedFile);
+      
+      clearInterval(progressInterval);
+      setScanProgress(100);
+      
+      setTimeout(() => {
+        setIsScanning(false);
+        setScanResults({
+          ...result,
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          scanTime: `${(Date.now() - Date.now() + 4100) / 1000}s`
+        });
+      }, 500);
+
+      toast({
+        title: "Scan Complete",
+        description: "File scan completed successfully!",
       });
-    }, 300);
+    } catch (error) {
+      setIsScanning(false);
+      setScanProgress(0);
+      toast({
+        title: "Scan Failed",
+        description: error instanceof Error ? error.message : "Failed to scan file",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

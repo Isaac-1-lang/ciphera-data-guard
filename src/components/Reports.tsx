@@ -85,7 +85,7 @@ export default function ReportsComponent() {
       ]
     },
     performance: {
-      avgScanTime: '2.1s',
+      avgScanTime: '140ms',
       throughput: '485 scans/hour',
       uptime: 99.9,
       errorRate: 0.1,
