@@ -40,13 +40,13 @@ export default function AnalyticsDashboard() {
 
   // Dummy data for charts
   const scanTrendData = [
-    { date: '2024-01-01', scans: 45, threats: 8, clean: 37 },
-    { date: '2024-01-02', scans: 52, threats: 12, clean: 40 },
-    { date: '2024-01-03', scans: 48, threats: 6, clean: 42 },
-    { date: '2024-01-04', scans: 61, threats: 15, clean: 46 },
-    { date: '2024-01-05', scans: 55, threats: 9, clean: 46 },
-    { date: '2024-01-06', scans: 67, threats: 18, clean: 49 },
-    { date: '2024-01-07', scans: 74, threats: 14, clean: 60 },
+    { date: '2025-08-12', scans: 45, Sensitives: 8, replaced:8  },
+    { date: '2025-08-13', scans: 52, Sensitives: 12, replaced:12 },
+    { date: '2025-08-14', scans: 48, Sensitives: 6, replaced: 6 },
+    { date: '2025-08-15', scans: 61, Sensitives: 15, replaced:15 },
+    { date: '2025-08-16', scans: 55, Sensitives: 9, replaced:9  },
+    { date: '2025-08-17', scans: 67, Sensitives: 18, replaced:18 },
+    { date: '2025-08-18', scans: 74, Sensitives: 14, replaced:14 },
   ]
 
   const threatTypeData = [
@@ -100,7 +100,7 @@ export default function AnalyticsDashboard() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-8 w-8 text-black" />
-              <h1 className="text-4xl font-bold text-black">Analytics Dashboard</h1>
+              <h1 className="text-4xl font-bold text-black">Analytics & Overview</h1>
             </div>
             <p className="text-gray-600 text-lg">
               Monitor prompt scanning activity and security insights.
@@ -164,7 +164,7 @@ export default function AnalyticsDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
-                  <p className="text-gray-600 text-sm font-medium">Threats Detected</p>
+                  <p className="text-gray-600 text-sm font-medium">Sensitive data Detected</p>
                   <p className="text-3xl font-bold text-black">89</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-red-600" />
@@ -225,7 +225,7 @@ export default function AnalyticsDashboard() {
                 Scan Activity Trends
               </CardTitle>
               <CardDescription className="text-gray-600">
-                Daily scanning activity and threat detection over time
+                Daily scanning activity and valuable detections over time
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">

@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Shield, 
   TrendingUp, 
@@ -10,181 +11,356 @@ import {
   Scan,
   BarChart3,
   Clock,
-  Users
+  Users,
+  Eye,
+  Zap,
+  Lock,
+  Activity,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
+  Star,
+  Sparkles
 } from "lucide-react";
 
 export default function Dashboard() {
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-foreground">Welcome back!</h2>
-          <p className="text-muted-foreground">Here's what's happening with your data security today.</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 p-6 space-y-8">
+      {/* Hero Welcome Section */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+              <Shield className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Welcome back, User!</h1>
+              <p className="text-blue-100 text-lg">Your data security fortress is running smoothly today</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4 mt-6">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <Scan className="h-5 w-5 mr-2" />
+              Quick Security Scan
+            </Button>
+            <Button variant="ghost" size="lg" className="text-white hover:bg-white/20 border-white/30 px-6 py-3 rounded-xl">
+              <Activity className="h-5 w-5 mr-2" />
+              View Reports
+            </Button>
+          </div>
         </div>
-        <Button variant="hero" size="lg" className="gap-2">
-          <Scan className="h-5 w-5" />
-          Quick Scan
-        </Button>
       </div>
 
-      {/* Stats Grid */}
+      {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-card shadow-card hover:shadow-elegant transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Scans</CardTitle>
-            <Shield className="h-4 w-4 text-accent" />
+        {/* Total Scans Card */}
+        <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Scans</CardTitle>
+            <div className="p-2 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors duration-300">
+              <Shield className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+12%</span> from last month
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-gray-900 mb-2">1,247</div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-green-600">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-sm font-medium">+12.5%</span>
+              </div>
+              <span className="text-sm text-gray-500">from last month</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-card shadow-card hover:shadow-elegant transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Data Protected</CardTitle>
-            <CheckCircle className="h-4 w-4 text-success" />
+        {/* Data Protected Card */}
+        <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-600">Data Protected</CardTitle>
+            <div className="p-2 bg-green-100 rounded-xl group-hover:bg-green-200 transition-colors duration-300">
+              <Lock className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">98.7%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+2.1%</span> accuracy improvement
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-gray-900 mb-2">98.7%</div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-green-600">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-sm font-medium">+2.1%</span>
+              </div>
+              <span className="text-sm text-gray-500">accuracy improvement</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-card shadow-card hover:shadow-elegant transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-warning" />
+        {/* Active Alerts Card */}
+        <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-600">Active Alerts</CardTitle>
+            <div className="p-2 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-colors duration-300">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-warning">2 high priority</span> items
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-gray-900 mb-2">3</div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-orange-600">
+                <ArrowDownRight className="h-4 w-4" />
+                <span className="text-sm font-medium">2 high priority</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Score Card */}
+        <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-gray-600">Security Score</CardTitle>
+            <div className="p-2 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition-colors duration-300">
+              <Target className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold text-gray-900 mb-2">94</div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                <span className="text-sm font-medium text-gray-700">Excellent</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Recent Activity */}
-        <Card className="lg:col-span-2 bg-gradient-card shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-accent" />
-              Recent Activity
-            </CardTitle>
-            <CardDescription>
-              Latest scans and security events
-            </CardDescription>
+        <Card className="xl:col-span-2 border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    <Clock className="h-6 w-6 text-blue-600" />
+                  </div>
+                  Recent Activity
+                </CardTitle>
+                <CardDescription className="text-gray-600 mt-2">
+                  Latest security scans and data protection events
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                View All
+                <ArrowUpRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="space-y-4">
               {[
-                { time: "2 min ago", action: "Email content scanned", status: "success", items: "3 sensitive items masked" },
-                { time: "15 min ago", action: "API prompt analyzed", status: "warning", items: "1 potential exposure detected" },
-                { time: "1 hour ago", action: "Document upload protected", status: "success", items: "5 SSN numbers replaced" },
-                { time: "3 hours ago", action: "Chat conversation secured", status: "success", items: "Credit card data masked" },
+                { 
+                  time: "2 min ago", 
+                  action: "Email content scanned", 
+                  status: "success", 
+                  items: "3 sensitive items masked",
+                  icon: CheckCircle,
+                  color: "text-green-600",
+                  bgColor: "bg-green-100"
+                },
+                { 
+                  time: "15 min ago", 
+                  action: "API prompt analyzed", 
+                  status: "warning", 
+                  items: "1 potential exposure detected",
+                  icon: AlertTriangle,
+                  color: "text-orange-600",
+                  bgColor: "bg-orange-100"
+                },
+                { 
+                  time: "1 hour ago", 
+                  action: "Document upload protected", 
+                  status: "success", 
+                  items: "5 SSN numbers replaced",
+                  icon: Lock,
+                  color: "text-blue-600",
+                  bgColor: "bg-blue-100"
+                },
+                { 
+                  time: "3 hours ago", 
+                  action: "Chat conversation secured", 
+                  status: "success", 
+                  items: "Credit card data masked",
+                  icon: Shield,
+                  color: "text-purple-600",
+                  bgColor: "bg-purple-100"
+                },
               ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border/50">
+                <div key={index} className="group flex items-center gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
+                  <div className={`p-3 rounded-xl ${activity.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                    <activity.icon className={`h-5 w-5 ${activity.color}`} />
+                  </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={activity.status === "success" ? "default" : "secondary"}>
+                    <div className="flex items-center gap-3 mb-1">
+                      <Badge variant={activity.status === "success" ? "default" : "secondary"} className="font-medium">
                         {activity.action}
                       </Badge>
-                      <span className="text-sm text-muted-foreground">{activity.time}</span>
+                      <span className="text-sm text-gray-500 font-medium">{activity.time}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{activity.items}</p>
+                    <p className="text-sm text-gray-600">{activity.items}</p>
                   </div>
-                  <CheckCircle className={`h-4 w-4 ${activity.status === "success" ? "text-success" : "text-warning"}`} />
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <ArrowUpRight className="h-4 w-4 text-gray-400" />
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Security Score */}
-        <Card className="bg-gradient-card shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-accent" />
+        {/* Security Score & Progress */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="text-center border-b border-gray-100">
+            <CardTitle className="flex items-center justify-center gap-3 text-xl mb-2">
+              <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+                <BarChart3 className="h-6 w-6 text-purple-600" />
+              </div>
               Security Score
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-600">
               Overall data protection rating
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-6 space-y-6">
             <div className="text-center">
-              <div className="text-4xl font-bold text-accent mb-2">94</div>
-              <Badge variant="default" className="bg-success text-success-foreground">
+              <div className="relative inline-block">
+                <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+                  94
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Sparkles className="h-6 w-6 text-yellow-500 animate-pulse" />
+                </div>
+              </div>
+              <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 text-sm font-semibold rounded-full">
                 Excellent
               </Badge>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Email Protection</span>
-                  <span className="text-success">98%</span>
+                <div className="flex justify-between text-sm mb-3">
+                  <span className="font-medium text-gray-700">Email Protection</span>
+                  <span className="font-semibold text-green-600">98%</span>
                 </div>
-                <Progress value={98} className="h-2" />
+                <Progress value={98} className="h-3 bg-gray-200" />
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>API Security</span>
-                  <span className="text-accent">95%</span>
+                <div className="flex justify-between text-sm mb-3">
+                  <span className="font-medium text-gray-700">API Security</span>
+                  <span className="font-semibold text-blue-600">95%</span>
                 </div>
-                <Progress value={95} className="h-2" />
+                <Progress value={95} className="h-3 bg-gray-200" />
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Document Scanning</span>
-                  <span className="text-warning">87%</span>
+                <div className="flex justify-between text-sm mb-3">
+                  <span className="font-medium text-gray-700">Document Scanning</span>
+                  <span className="font-semibold text-orange-600">87%</span>
                 </div>
-                <Progress value={87} className="h-2" />
+                <Progress value={87} className="h-3 bg-gray-200" />
               </div>
             </div>
 
-            <Button variant="outline" className="w-full">
+            <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <Eye className="h-4 w-4 mr-2" />
               View Detailed Report
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="bg-gradient-card shadow-card">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks and shortcuts
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="security" className="h-20 flex-col gap-2">
-              <Scan className="h-6 w-6" />
-              Scan New Content
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <BarChart3 className="h-6 w-6" />
-              View Analytics
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <AlertTriangle className="h-6 w-6" />
-              Check Alerts
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Quick Actions & Features */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Quick Actions */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
+                <Zap className="h-6 w-6 text-blue-600" />
+              </div>
+              Quick Actions
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Common security tasks and shortcuts
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button variant="outline" className="h-24 flex-col gap-3 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
+                <Scan className="h-8 w-8" />
+                <span className="font-semibold">Scan New Content</span>
+              </Button>
+              <Button variant="outline" className="h-24 flex-col gap-3 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-purple-200 hover:border-purple-300 text-purple-700 hover:text-purple-800 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
+                <BarChart3 className="h-8 w-8" />
+                <span className="font-semibold">View Analytics</span>
+              </Button>
+              <Button variant="outline" className="h-24 flex-col gap-3 bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-orange-200 hover:border-orange-300 text-orange-700 hover:text-orange-800 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
+                <AlertTriangle className="h-8 w-8" />
+                <span className="font-semibold">Check Alerts</span>
+              </Button>
+              <Button variant="outline" className="h-24 flex-col gap-3 bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-green-200 hover:border-green-300 text-green-700 hover:text-green-800 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
+                <Users className="h-8 w-8" />
+                <span className="font-semibold">Team Overview</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* System Status */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl">
+                <Activity className="h-6 w-6 text-green-600" />
+              </div>
+              System Status
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Current security system health
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { name: "AI Scanner Engine", status: "operational", uptime: "99.9%" },
+                { name: "Data Encryption", status: "operational", uptime: "100%" },
+                { name: "Threat Detection", status: "operational", uptime: "99.8%" },
+                { name: "API Gateway", status: "operational", uptime: "99.7%" },
+              ].map((service, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="font-medium text-gray-700">{service.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-green-600">{service.status}</div>
+                    <div className="text-xs text-gray-500">{service.uptime} uptime</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

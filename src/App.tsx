@@ -11,6 +11,11 @@ import { DashboardLayout } from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import  SettingsPage from "@/components/Settings";
 import AnalyticsDashboard from "@/components/Analytics";
+import HistoryComponent from "./components/History";
+import ReportsComponent from "./components/Reports";
+import ScanComponent from "./components/Scan";
+import AwarenessComponent from "./components/Awareness";
+import AlertsComponent from "./components/Alerts";
 
 const queryClient = new QueryClient();
 
@@ -61,10 +66,7 @@ const App = () => {
                   path="/scan" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Scan & Protect</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <ScanComponent/>
                     </DashboardLayout>
                   } 
                 />
@@ -72,10 +74,7 @@ const App = () => {
                   path="/history" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">History</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <HistoryComponent/>
                     </DashboardLayout>
                   } 
                 />
@@ -91,21 +90,15 @@ const App = () => {
                   path="/reports" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Reports</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <ReportsComponent/>
                     </DashboardLayout>
                   } 
                 />
                 <Route 
-                  path="/team" 
+                  path="/educ" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Team</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <AwarenessComponent/>
                     </DashboardLayout>
                   } 
                 />
@@ -113,10 +106,7 @@ const App = () => {
                   path="/alerts" 
                   element={
                     <DashboardLayout onLogout={handleLogout}>
-                      <div className="text-center py-12">
-                        <h2 className="text-2xl font-bold mb-4">Alerts</h2>
-                        <p className="text-muted-foreground">Coming soon...</p>
-                      </div>
+                      <AlertsComponent/>
                     </DashboardLayout>
                   } 
                 />
