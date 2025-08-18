@@ -49,9 +49,17 @@ export default function Dashboard() {
       }
     };
     load();
+    loadStats();
   }, []);
 
-
+    const loadStats = async () => {
+    try {
+      const response = await apiService.getScanStats();
+      setStats(response);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
   const loadHistoryData = async () => {
     try {
       setIsLoading(true);
@@ -138,7 +146,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="relative z-10">
             {/* Display total scans count from the database */}
-            <div className="text-3xl font-bold text-gray-900 mb-2">{dashboard?.overview?.totalScans ?? 0}</div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">{stats?.totalScans ?? 0}</div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-green-600">
                 <ArrowUpRight className="h-4 w-4" />
