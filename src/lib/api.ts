@@ -49,13 +49,21 @@ class ApiService {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    const config: RequestInit = {
-      headers: {
+    // Build headers conditionally: do NOT set JSON content-type for FormData
+    let headers: HeadersInit = options.headers || {};
+    const isFormData = options.body instanceof FormData;
+
+    if (!isFormData) {
+      headers = {
         'Content-Type': 'application/json',
-        ...options.headers,
-      },
+        ...headers,
+      };
+    }
+
+    const config: RequestInit = {
       credentials: 'include', // Include cookies for JWT
       ...options,
+      headers,
     };
 
     try {

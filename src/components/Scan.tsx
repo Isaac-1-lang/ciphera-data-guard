@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ export default function ScanComponent() {
   const [textInput, setTextInput] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleTextScan = async () => {
     if (!textInput.trim()) return;
@@ -58,7 +59,7 @@ export default function ScanComponent() {
       setTimeout(() => {
         setIsScanning(false);
         setScanResults({
-          ...result,
+          ...result.data,
           scanTime: `${(Date.now() - Date.now() + 2300) / 1000}s`,
           textLength: textInput.length
         });
@@ -106,7 +107,7 @@ export default function ScanComponent() {
       setTimeout(() => {
         setIsScanning(false);
         setScanResults({
-          ...result,
+          ...result.data,
           fileName: selectedFile.name,
           fileSize: selectedFile.size,
           scanTime: `${(Date.now() - Date.now() + 4100) / 1000}s`
@@ -217,7 +218,12 @@ export default function ScanComponent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-accent transition-colors duration-300">
+            <div
+              className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-accent transition-colors duration-300 cursor-pointer"
+              onClick={() => {
+                if (!isScanning) fileInputRef.current?.click();
+              }}
+            >
               <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <div className="space-y-2">
                 <p className="text-lg font-medium text-foreground">
@@ -227,18 +233,24 @@ export default function ScanComponent() {
                   Supports PDF, DOC, DOCX, TXT, and image files
                 </p>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   onChange={handleFileChange}
                   accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
                   className="hidden"
-                  id="file-upload"
                   disabled={isScanning}
                 />
-                <label htmlFor="file-upload">
-                  <Button variant="outline" className="cursor-pointer" disabled={isScanning}>
-                    Choose File
-                  </Button>
-                </label>
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  disabled={isScanning}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Choose File
+                </Button>
               </div>
             </div>
             <Button 
@@ -300,26 +312,33 @@ export default function ScanComponent() {
                 Threats Detected
               </h4>
               <div className="space-y-3">
-                {scanResults.threats.map((threat: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-xl border border-border">
-                    <div className="flex items-center gap-3">
-                      <Badge 
-                        variant={threat.severity === 'critical' ? 'destructive' : threat.severity === 'high' ? 'secondary' : 'outline'}
-                        className="font-semibold"
-                      >
-                        {threat.severity.toUpperCase()}
-                      </Badge>
-                      <div>
-                        <p className="font-medium text-foreground">{threat.type}</p>
-                        <p className="text-sm text-muted-foreground">{threat.details}</p>
+                {scanResults.threats && scanResults.threats.length > 0 ? (
+                  scanResults.threats.map((threat: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-xl border border-border">
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant={threat.severity === 'critical' ? 'destructive' : threat.severity === 'high' ? 'secondary' : 'outline'}
+                          className="font-semibold"
+                        >
+                          {threat.severity.toUpperCase()}
+                        </Badge>
+                        <div>
+                          <p className="font-medium text-foreground">{threat.type}</p>
+                          <p className="text-sm text-muted-foreground">{threat.details}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-foreground">{threat.count}</p>
+                        <p className="text-sm text-muted-foreground">items</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-foreground">{threat.count}</p>
-                      <p className="text-sm text-muted-foreground">items</p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400 mr-3" />
+                    <p className="text-green-800 dark:text-green-200 font-medium">No threats detected! Your content appears to be clean.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -330,12 +349,18 @@ export default function ScanComponent() {
                 Security Recommendations
               </h4>
               <div className="space-y-2">
-                {scanResults.recommendations.map((rec: string, index: number) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-accent/10 rounded-lg border border-accent/20">
-                    <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-foreground">{rec}</p>
+                {scanResults.recommendations && scanResults.recommendations.length > 0 ? (
+                  scanResults.recommendations.map((rec: string, index: number) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-accent/10 rounded-lg border border-accent/20">
+                      <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-foreground">{rec}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center p-4 bg-muted/30 rounded-lg border border-border">
+                    <p className="text-muted-foreground">No specific recommendations available.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
