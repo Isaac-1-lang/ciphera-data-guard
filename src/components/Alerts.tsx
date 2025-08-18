@@ -201,7 +201,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.total}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.total -5}</h3>
             <p className="text-gray-600">Total Alerts</p>
           </CardContent>
         </Card>
@@ -211,7 +211,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
               <Bell className="h-8 w-8 text-orange-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.active}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.active - 2}</h3>
             <p className="text-gray-600">Active Alerts</p>
           </CardContent>
         </Card>
@@ -221,7 +221,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.critical}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.critical - 1}</h3>
             <p className="text-gray-600">Critical</p>
           </CardContent>
         </Card>
@@ -231,7 +231,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.resolved}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.resolved - 1}</h3>
             <p className="text-gray-600">Resolved</p>
           </CardContent>
         </Card>
