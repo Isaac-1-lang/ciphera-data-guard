@@ -59,11 +59,11 @@ export default function ReportsComponent() {
 
   const mockReportData = {
     security: {
-      totalScans: 1247,
-      threatsDetected: 89,
-      cleanScans: 1158,
-      detectionRate: 98.7,
-      avgResponseTime: '142ms',
+      totalScans: 0,
+      threatsDetected: 0,
+      cleanScans: 0,
+      detectionRate: 0,
+      avgResponseTime: '1ms',
       topThreats: [
         { type: 'Personal Information', count: 45, percentage: 50.6 },
         { type: 'Financial Data', count: 23, percentage: 25.8 },
@@ -72,11 +72,11 @@ export default function ReportsComponent() {
       ]
     },
     threats: {
-      critical: 12,
-      high: 34,
-      medium: 28,
-      low: 15,
-      trend: '+8.2%',
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      trend: '0%',
       topSources: [
         { source: 'Email Content', count: 38, percentage: 42.7 },
         { source: 'Document Uploads', count: 25, percentage: 28.1 },

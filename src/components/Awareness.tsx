@@ -29,7 +29,7 @@ export default function AwarenessComponent() {
       description: 'Learn to identify and avoid phishing attempts',
       duration: '15 min',
       difficulty: 'Beginner',
-      progress: 85,
+      progress: 1,
       completed: true,
       icon: AlertTriangle,
       color: 'from-red-600 to-pink-600',
@@ -143,7 +143,7 @@ export default function AwarenessComponent() {
             <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">2</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">0</h3>
             <p className="text-gray-600">Completed</p>
           </CardContent>
         </Card>
@@ -153,7 +153,7 @@ export default function AwarenessComponent() {
             <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
               <Clock className="h-8 w-8 text-orange-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">47 min</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">60 min</h3>
             <p className="text-gray-600">Total Time</p>
           </CardContent>
         </Card>
@@ -163,7 +163,7 @@ export default function AwarenessComponent() {
             <div className="p-3 bg-purple-100 rounded-xl w-fit mx-auto mb-4">
               <Target className="h-8 w-8 text-purple-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">61%</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">1%</h3>
             <p className="text-gray-600">Overall Progress</p>
           </CardContent>
         </Card>

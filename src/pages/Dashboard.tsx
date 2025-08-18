@@ -310,7 +310,7 @@ export default function Dashboard() {
 
             <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
               <Eye className="h-4 w-4 mr-2" />
-              View Detailed Report
+              View Report
             </Button>
           </CardContent>
         </Card>
@@ -331,14 +331,13 @@ export default function Dashboard() {
           <CardContent>
             <div className="flex items-center gap-4 mb-6">
               <Avatar className="h-20 w-20 border-4 border-indigo-100 shadow-lg">
-                <AvatarImage src="" alt={getDisplayName()} />
+                <AvatarImage src="" alt="User" />
                 <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-2xl font-bold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{getDisplayName()}</h3>
-                <p className="text-gray-600 mb-2">{user?.email}</p>
+                
                 <Badge variant="outline" className="border-indigo-200 text-indigo-700">
                   {user?.role || 'User'}
                 </Badge>
@@ -365,6 +364,8 @@ export default function Dashboard() {
                 <Eye className="h-4 w-4 mr-2" />
                 View Profile
               </Button>
+            </div>
+            <div className="mt-2 flex gap-2">
               <Button variant="outline" size="sm" className="flex-1">
                 <Zap className="h-4 w-4 mr-2" />
                 Settings

@@ -98,14 +98,14 @@ export default function HistoryComponent() {
     }
   };
 
-  const filteredData = historyData.filter(item => {
+  const filteredData =Array.isArray(historyData) ? historyData.filter(item => {
     const matchesSearch = (item.content || item.fileName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (item.type || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || 
                          (selectedFilter === 'threats' && (item.threats?.length || 0) > 0) ||
                          (selectedFilter === 'clean' && (item.threats?.length || 0) === 0);
     return matchesSearch && matchesFilter;
-  });
+  }): [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-accent/10 p-6 space-y-8">

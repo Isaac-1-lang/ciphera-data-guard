@@ -147,10 +147,10 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Total Scans</p>
-                  <p className="text-3xl font-bold text-black">1,247</p>
+                  <p className="text-3xl font-bold text-black">0</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-green-600 text-sm font-medium">+12.5%</span>
+                    <span className="text-green-600 text-sm font-medium">0%</span>
                   </div>
                 </div>
                 <div className="bg-black bg-opacity-10 p-3 rounded-lg">
@@ -165,10 +165,10 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Sensitive data Detected</p>
-                  <p className="text-3xl font-bold text-black">89</p>
+                  <p className="text-3xl font-bold text-black">0</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-red-600" />
-                    <span className="text-red-600 text-sm font-medium">+8.2%</span>
+                    <span className="text-red-600 text-sm font-medium">0%</span>
                   </div>
                 </div>
                 <div className="bg-red-100 p-3 rounded-lg">
@@ -183,10 +183,10 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Clean Prompts</p>
-                  <p className="text-3xl font-bold text-black">1,158</p>
+                  <p className="text-3xl font-bold text-black">0</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-green-600 text-sm font-medium">+15.1%</span>
+                    <span className="text-green-600 text-sm font-medium">0%</span>
                   </div>
                 </div>
                 <div className="bg-green-100 p-3 rounded-lg">
@@ -201,10 +201,10 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Avg Response Time</p>
-                  <p className="text-3xl font-bold text-black">142ms</p>
+                  <p className="text-3xl font-bold text-black">0ms</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-green-600 text-sm font-medium">-5.3%</span>
+                    <span className="text-green-600 text-sm font-medium">0%</span>
                   </div>
                 </div>
                 <div className="bg-blue-100 p-3 rounded-lg">
