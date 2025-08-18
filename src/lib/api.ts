@@ -85,106 +85,139 @@ class ApiService {
 
   // Auth endpoints
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/login', {
+    const res = await this.request<{ success: boolean; message: string; user: User; token?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
+    return { user: res.user, message: res.message };
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/register', {
+    const res = await this.request<{ success: boolean; message: string; user: User; token?: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+    return { user: res.user, message: res.message };
   }
 
   async logout(): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/logout', {
-      method: 'POST',
-    });
+    const res = await this.request<{ success: boolean; message: string }>('/auth/logout', { method: 'POST' });
+    return { message: res.message };
   }
 
   async getProfile(): Promise<User> {
-    return this.request<User>('/auth/profile');
+    const res = await this.request<{ success: boolean; user: User }>('/auth/profile');
+    return res.user;
   }
 
   async updateProfile(profileData: Partial<User>): Promise<User> {
-    return this.request<User>('/auth/profile', {
+    const res = await this.request<{ success: boolean; message: string; user: User }>('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData),
     });
+    return res.user;
   }
 
   async changePassword(passwords: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/change-password', {
+    const res = await this.request<{ success: boolean; message: string }>('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify(passwords),
     });
+    return { message: res.message };
   }
 
   // Scan endpoints
   async scanText(content: string): Promise<any> {
-    return this.request('/scan/text', {
+    const res = await this.request<{ success: boolean; data: any; message: string }>('/scan/text', {
       method: 'POST',
       body: JSON.stringify({ content }),
     });
+    return res.data;
   }
 
   async scanFile(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
     
-    return this.request('/scan/file', {
+    const res = await this.request<{ success: boolean; data: any; message: string }>('/scan/file', {
       method: 'POST',
       headers: {}, // Let browser set Content-Type for FormData
       body: formData,
     });
+    return res.data;
   }
 
-  async getScanHistory(page = 1, limit = 10): Promise<any> {
-    return this.request(`/scan/history?page=${page}&limit=${limit}`);
+  async getScanHistory(page = 1, limit = 10): Promise<{ docs: any[]; totalDocs: number; limit: number; page: number; totalPages: number; hasNextPage: boolean; hasPrevPage: boolean }> {
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/scan/history?page=${page}&limit=${limit}`);
+    return res.data;
   }
 
   async getScanStats(): Promise<any> {
-    return this.request('/scan/stats');
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/scan/stats`);
+    return res.data;
   }
 
   // Alert endpoints
-  async getAlerts(page = 1, limit = 10): Promise<any> {
-    return this.request(`/alerts?page=${page}&limit=${limit}`);
+  async getAlerts(page = 1, limit = 10): Promise<{ docs: any[]; totalDocs: number; limit: number; page: number; totalPages: number; hasNextPage: boolean; hasPrevPage: boolean }> {
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/alerts?page=${page}&limit=${limit}`);
+    return res.data;
   }
 
   async getAlertStats(): Promise<any> {
-    return this.request('/alerts/stats');
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/alerts/stats`);
+    return res.data;
   }
 
   async updateAlert(alertId: string, updates: any): Promise<any> {
-    return this.request(`/alerts/${alertId}`, {
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/alerts/${alertId}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
+    return res.data;
   }
 
   async resolveAlert(alertId: string): Promise<any> {
-    return this.request(`/alerts/${alertId}/resolve`, {
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/alerts/${alertId}/resolve`, {
       method: 'POST',
     });
+    return res.data;
   }
 
   async snoozeAlert(alertId: string, duration: number): Promise<any> {
-    return this.request(`/alerts/${alertId}/snooze`, {
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/alerts/${alertId}/snooze`, {
       method: 'POST',
       body: JSON.stringify({ duration }),
     });
+    return res.data;
+  }
+
+  async deleteAlert(alertId: string): Promise<{ message: string }> {
+    const res = await this.request<{ success: boolean; message: string }>(`/alerts/${alertId}`, {
+      method: 'DELETE',
+    });
+    return { message: res.message };
+  }
+
+  async acknowledgeAllAlerts(): Promise<{ acknowledgedCount: number }> {
+    const res = await this.request<{ success: boolean; data: { acknowledgedCount: number }; message: string }>(`/alerts/acknowledge-all`, {
+      method: 'POST',
+    });
+    return res.data;
   }
 
   // Dashboard endpoints
   async getDashboardData(): Promise<any> {
-    return this.request('/dashboard/data');
+    const res = await this.request<{ success: boolean; data: any; message: string }>(`/dashboard/data`);
+    return res.data;
   }
 
-  async getAnalytics(): Promise<any> {
-    return this.request('/dashboard/analytics');
+  async getAnalytics(params?: { type?: string; period?: string }): Promise<any> {
+    const search = new URLSearchParams();
+    if (params?.type) search.set('type', params.type);
+    if (params?.period) search.set('period', params.period);
+    const path = `/dashboard/analytics${search.toString() ? `?${search.toString()}` : ''}`;
+    const res = await this.request<{ success: boolean; data: any; message: string }>(path);
+    return res.data;
   }
 }
 

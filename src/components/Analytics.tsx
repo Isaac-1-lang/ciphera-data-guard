@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiService } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { 
@@ -37,52 +38,83 @@ export default function AnalyticsDashboard() {
   const [timeRange, setTimeRange] = useState('7d')
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [metrics, setMetrics] = useState<any | null>(null)
+  const [scanTrends, setScanTrends] = useState<Array<{ date: string; scans: number; alerts: number }>>([])
+  const [threatTypeData, setThreatTypeData] = useState<Array<{ name: string; value: number; color: string }>>([])
+  const [hourlyActivityData, setHourlyActivityData] = useState<Array<{ hour: string; scans: number }>>([])
+  const [severityDistribution, setSeverityDistribution] = useState<Array<{ name: string; value: number }>>([])
 
-  // Dummy data for charts
-  const scanTrendData = [
-    { date: '2025-08-12', scans: 45, Sensitives: 8, replaced:8  },
-    { date: '2025-08-13', scans: 52, Sensitives: 12, replaced:12 },
-    { date: '2025-08-14', scans: 48, Sensitives: 6, replaced: 6 },
-    { date: '2025-08-15', scans: 61, Sensitives: 15, replaced:15 },
-    { date: '2025-08-16', scans: 55, Sensitives: 9, replaced:9  },
-    { date: '2025-08-17', scans: 67, Sensitives: 18, replaced:18 },
-    { date: '2025-08-18', scans: 74, Sensitives: 14, replaced:14 },
-  ]
+  // Build datasets from backend
 
-  const threatTypeData = [
-    { name: 'Malicious Prompts', value: 35, color: '#000000' },
-    { name: 'Data Extraction', value: 28, color: '#404040' },
-    { name: 'Injection Attacks', value: 22, color: '#808080' },
-    { name: 'Social Engineering', value: 15, color: '#C0C0C0' },
-  ]
+  const load = async () => {
+    setIsLoading(true)
+    try {
+      const [security, threats, performance, dashboard] = await Promise.all([
+        apiService.getAnalytics({ period: timeRange, type: 'security' }),
+        apiService.getAnalytics({ period: timeRange, type: 'threats' }),
+        apiService.getAnalytics({ period: timeRange, type: 'performance' }),
+        apiService.getDashboardData(),
+      ])
 
-  const hourlyActivityData = [
-    { hour: '00', scans: 12 }, { hour: '01', scans: 8 }, { hour: '02', scans: 5 },
-    { hour: '03', scans: 3 }, { hour: '04', scans: 4 }, { hour: '05', scans: 7 },
-    { hour: '06', scans: 15 }, { hour: '07', scans: 28 }, { hour: '08', scans: 42 },
-    { hour: '09', scans: 65 }, { hour: '10', scans: 78 }, { hour: '11', scans: 82 },
-    { hour: '12', scans: 91 }, { hour: '13', scans: 85 }, { hour: '14', scans: 92 },
-    { hour: '15', scans: 88 }, { hour: '16', scans: 75 }, { hour: '17', scans: 68 },
-    { hour: '18', scans: 45 }, { hour: '19', scans: 35 }, { hour: '20', scans: 28 },
-    { hour: '21', scans: 22 }, { hour: '22', scans: 18 }, { hour: '23', scans: 15 },
-  ]
+      setMetrics(security)
+      setLastUpdated(new Date())
 
-  const severityTrendData = [
-    { date: '2024-01-01', critical: 2, high: 6, medium: 12, low: 8 },
-    { date: '2024-01-02', critical: 4, high: 8, medium: 15, low: 11 },
-    { date: '2024-01-03', critical: 1, high: 5, medium: 10, low: 9 },
-    { date: '2024-01-04', critical: 6, high: 9, medium: 18, low: 14 },
-    { date: '2024-01-05', critical: 3, high: 6, medium: 14, low: 12 },
-    { date: '2024-01-06', critical: 8, high: 10, medium: 22, low: 16 },
-    { date: '2024-01-07', critical: 5, high: 9, medium: 19, low: 18 },
-  ]
+      // Trends by date (scans and alerts)
+      const scansByDate = new Map<string, { scans: number; alerts: number }>()
+      ;(dashboard?.trends?.scans || []).forEach((row: any) => {
+        scansByDate.set(row._id, { scans: row.count, alerts: 0 })
+      })
+      ;(dashboard?.trends?.alerts || []).forEach((row: any) => {
+        const prev = scansByDate.get(row._id) || { scans: 0, alerts: 0 }
+        scansByDate.set(row._id, { ...prev, alerts: row.count })
+      })
+      const mergedTrend = Array.from(scansByDate.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([date, v]) => ({ date, scans: v.scans, alerts: v.alerts }))
+      setScanTrends(mergedTrend)
+
+      // Threat types pie
+      const typeToCount: Record<string, number> = {}
+      ;(threats?.threatBreakdown || []).forEach((item: any) => {
+        const type = item._id?.type || 'Unknown'
+        typeToCount[type] = (typeToCount[type] || 0) + (item.count || 0)
+      })
+      const palette = ['#111827', '#374151', '#6B7280', '#9CA3AF', '#D1D5DB', '#E5E7EB']
+      const typesData = Object.entries(typeToCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([name, value], idx) => ({ name, value: value as number, color: palette[idx % palette.length] }))
+      setThreatTypeData(typesData)
+
+      // Hourly activity
+      const hourly = (performance?.throughput || []).map((row: any) => ({ hour: row._id, scans: row.count }))
+      setHourlyActivityData(hourly)
+
+      // Severity distribution
+      const sevMap: Record<string, number> = { critical: 0, high: 0, medium: 0, low: 0 }
+      ;(threats?.severityCounts || []).forEach((row: any) => {
+        const sev = (row._id || '').toLowerCase()
+        if (sev in sevMap) {
+          sevMap[sev] = row.count || 0
+        }
+      })
+      setSeverityDistribution([
+        { name: 'Critical', value: sevMap.critical },
+        { name: 'High', value: sevMap.high },
+        { name: 'Medium', value: sevMap.medium },
+        { name: 'Low', value: sevMap.low },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [timeRange])
 
   const handleRefresh = () => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      setLastUpdated(new Date())
-    }, 2000)
+    load()
   }
 
   const formatDate = (date) => {
@@ -147,7 +179,7 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Total Scans</p>
-                  <p className="text-3xl font-bold text-black">0</p>
+                  <p className="text-3xl font-bold text-black">{metrics?.totalScans}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
                     <span className="text-green-600 text-sm font-medium">0%</span>
@@ -165,7 +197,7 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Sensitive data Detected</p>
-                  <p className="text-3xl font-bold text-black">0</p>
+                  <p className="text-3xl font-bold text-black">{metrics?.threatsDetected ?? 0}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-red-600" />
                     <span className="text-red-600 text-sm font-medium">0%</span>
@@ -183,7 +215,7 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Clean Prompts</p>
-                  <p className="text-3xl font-bold text-black">0</p>
+                  <p className="text-3xl font-bold text-black">{metrics?.cleanScans ?? 0}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
                     <span className="text-green-600 text-sm font-medium">0%</span>
@@ -201,7 +233,7 @@ export default function AnalyticsDashboard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-gray-600 text-sm font-medium">Avg Response Time</p>
-                  <p className="text-3xl font-bold text-black">0ms</p>
+                  <p className="text-3xl font-bold text-black">{metrics?.avgResponseTime ? `${metrics.avgResponseTime}ms` : '0ms'}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
                     <span className="text-green-600 text-sm font-medium">0%</span>
@@ -230,7 +262,7 @@ export default function AnalyticsDashboard() {
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={scanTrendData}>
+                <AreaChart data={scanTrends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="date" 
@@ -253,14 +285,7 @@ export default function AnalyticsDashboard() {
                     fillOpacity={0.1}
                     strokeWidth={2}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="threats" 
-                    stroke="#dc2626" 
-                    fill="#dc2626" 
-                    fillOpacity={0.1}
-                    strokeWidth={2}
-                  />
+                  <Area type="monotone" dataKey="alerts" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -368,7 +393,7 @@ export default function AnalyticsDashboard() {
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={severityTrendData}>
+                <LineChart data={[{date: new Date().toISOString(), critical: severityDistribution.find(s=>s.name==='Critical')?.value || 0, high: severityDistribution.find(s=>s.name==='High')?.value || 0, medium: severityDistribution.find(s=>s.name==='Medium')?.value || 0, low: severityDistribution.find(s=>s.name==='Low')?.value || 0}] }>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="date" 

@@ -23,14 +23,55 @@ import {
   Sparkles
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { apiService } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [dashboard, setDashboard] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await apiService.getDashboardData();
+        setDashboard(data);
+      } catch (e) {
+        // ignore in UI for now
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+
+  const loadHistoryData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiService.getScanHistory(currentPage, 10);
+      setHistoryData(response.docs || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load scan history",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Get user's display name (firstName + lastName or username as fallback)
   const getDisplayName = () => {
     if (user?.firstName && user?.lastName) {
-      return `${user.firstName} ${user.lastName}`;
+      return `${user.lastName}`;
     }
     return user?.username || user?.firstName || user?.lastName || 'User';
   };
@@ -96,11 +137,12 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-gray-900 mb-2">1,247</div>
+            {/* Display total scans count from the database */}
+            <div className="text-3xl font-bold text-gray-900 mb-2">{dashboard?.overview?.totalScans ?? 0}</div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-green-600">
                 <ArrowUpRight className="h-4 w-4" />
-                <span className="text-sm font-medium">+12.5%</span>
+                <span className="text-sm font-medium">{dashboard ? `${dashboard.performance?.throughput ?? 0}/day` : '—'}</span>
               </div>
               <span className="text-sm text-gray-500">from last month</span>
             </div>
@@ -117,11 +159,18 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-gray-900 mb-2">98.7%</div>
+            {/* From the database */}
+            <div className="text-3xl font-bold text-gray-900 mb-2">{(() => {
+              const completed = dashboard?.overview?.completedScans ?? 0;
+              const clean = dashboard?.overview?.cleanScans ?? 0;
+              if (completed === 0) return '0%';
+              const pct = Math.round((clean / completed) * 100);
+              return `${pct}%`;
+            })()}</div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-green-600">
                 <ArrowUpRight className="h-4 w-4" />
-                <span className="text-sm font-medium">+2.1%</span>
+                <span className="text-sm font-medium">{dashboard?.overview ? `${dashboard.overview.cleanScans ?? 0} clean` : '—'}</span>
               </div>
               <span className="text-sm text-gray-500">accuracy improvement</span>
             </div>
@@ -138,11 +187,12 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-gray-900 mb-2">3</div>
+            {/* From the databases */}
+            <div className="text-3xl font-bold text-gray-900 mb-2">{dashboard?.overview?.activeAlerts ?? 0}</div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-orange-600">
                 <ArrowDownRight className="h-4 w-4" />
-                <span className="text-sm font-medium">2 high priority</span>
+                <span className="text-sm font-medium">{dashboard?.overview ? `${dashboard.overview.criticalAlerts ?? 0} critical` : '—'}</span>
               </div>
             </div>
           </CardContent>
@@ -158,7 +208,8 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-gray-900 mb-2">94</div>
+            {/* From the db */}
+            <div className="text-3xl font-bold text-gray-900 mb-2">{dashboard?.overview?.securityScore ?? 0}</div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
@@ -193,57 +244,21 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
+            {/* Featured recent activity from DB */}
             <div className="space-y-4">
-              {[
-                { 
-                  time: "2 min ago", 
-                  action: "Email content scanned", 
-                  status: "success", 
-                  items: "3 sensitive items masked",
-                  icon: CheckCircle,
-                  color: "text-green-600",
-                  bgColor: "bg-green-100"
-                },
-                { 
-                  time: "15 min ago", 
-                  action: "API prompt analyzed", 
-                  status: "warning", 
-                  items: "1 potential exposure detected",
-                  icon: AlertTriangle,
-                  color: "text-orange-600",
-                  bgColor: "bg-orange-100"
-                },
-                { 
-                  time: "1 hour ago", 
-                  action: "Document upload protected", 
-                  status: "success", 
-                  items: "5 SSN numbers replaced",
-                  icon: Lock,
-                  color: "text-blue-600",
-                  bgColor: "bg-blue-100"
-                },
-                { 
-                  time: "3 hours ago", 
-                  action: "Chat conversation secured", 
-                  status: "success", 
-                  items: "Credit card data masked",
-                  icon: Shield,
-                  color: "text-purple-600",
-                  bgColor: "bg-purple-100"
-                },
-              ].map((activity, index) => (
-                <div key={index} className="group flex items-center gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
-                  <div className={`p-3 rounded-xl ${activity.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                    <activity.icon className={`h-5 w-5 ${activity.color}`} />
+              {(dashboard?.recentActivity ?? []).map((item: any) => (
+                <div key={item.id} className="group flex items-center gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
+                  <div className={`p-3 rounded-xl bg-blue-100 group-hover:scale-110 transition-transform duration-300`}>
+                    <Scan className={`h-5 w-5 text-blue-600`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <Badge variant={activity.status === "success" ? "default" : "secondary"} className="font-medium">
-                        {activity.action}
+                      <Badge variant={item.threatCount > 0 ? "secondary" : "default"} className="font-medium">
+                        {item.type}
                       </Badge>
-                      <span className="text-sm text-gray-500 font-medium">{activity.time}</span>
+                      <span className="text-sm text-gray-500 font-medium">{new Date(item.createdAt).toLocaleString()}</span>
                     </div>
-                    <p className="text-sm text-gray-600">{activity.items}</p>
+                    <p className="text-sm text-gray-600">{item.content}</p>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <ArrowUpRight className="h-4 w-4 text-gray-400" />
@@ -271,7 +286,7 @@ export default function Dashboard() {
             <div className="text-center">
               <div className="relative inline-block">
                 <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
-                  94
+                  {dashboard?.overview?.securityScore ? `${dashboard.overview.securityScore}%` : '0%'}
                 </div>
                 <div className="absolute -top-2 -right-2">
                   <Sparkles className="h-6 w-6 text-yellow-500 animate-pulse" />

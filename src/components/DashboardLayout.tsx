@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, User, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "./ThemeToggle";
+import { apiService } from "@/lib/api";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

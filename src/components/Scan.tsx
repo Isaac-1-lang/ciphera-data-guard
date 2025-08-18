@@ -59,8 +59,8 @@ export default function ScanComponent() {
       setTimeout(() => {
         setIsScanning(false);
         setScanResults({
-          ...result.data,
-          scanTime: `${(Date.now() - Date.now() + 2300) / 1000}s`,
+          ...result,
+          scanTime: `${Math.max(1, Math.round(result.scanTime / 1000))}s`,
           textLength: textInput.length
         });
       }, 500);
@@ -107,10 +107,10 @@ export default function ScanComponent() {
       setTimeout(() => {
         setIsScanning(false);
         setScanResults({
-          ...result.data,
+          ...result,
           fileName: selectedFile.name,
           fileSize: selectedFile.size,
-          scanTime: `${(Date.now() - Date.now() + 4100) / 1000}s`
+          scanTime: `${Math.max(1, Math.round(result.scanTime / 1000))}s`
         });
       }, 500);
 

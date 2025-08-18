@@ -41,7 +41,7 @@ export default function HistoryComponent() {
     try {
       setIsLoading(true);
       const response = await apiService.getScanHistory(currentPage, 10);
-      setHistoryData(response.docs || response.data || []);
+      setHistoryData(response.docs || []);
     } catch (error) {
       toast({
         title: "Error",

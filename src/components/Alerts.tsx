@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,74 +20,36 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import { apiService } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AlertsComponent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [expandedAlerts, setExpandedAlerts] = useState<Set<number>>(new Set());
+  const [expandedAlerts, setExpandedAlerts] = useState<Set<string | number>>(new Set());
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { toast } = useToast();
 
-  const alerts = [
-    {
-      id: 1,
-      title: 'Suspicious Login Attempt',
-      description: 'Multiple failed login attempts detected from unknown IP address',
-      severity: 'high',
-      status: 'active',
-      timestamp: '2024-01-15 14:30:25',
-      category: 'Authentication',
-      source: '192.168.1.100',
-      affectedUsers: 1,
-      priority: 'urgent'
-    },
-    {
-      id: 2,
-      title: 'Data Exfiltration Attempt',
-      description: 'Large file transfer detected to external destination',
-      severity: 'critical',
-      status: 'investigating',
-      timestamp: '2024-01-15 13:45:12',
-      category: 'Data Loss',
-      source: 'Internal Network',
-      affectedUsers: 3,
-      priority: 'immediate'
-    },
-    {
-      id: 3,
-      title: 'Malware Detection',
-      description: 'Suspicious file behavior detected during scan',
-      severity: 'medium',
-      status: 'resolved',
-      timestamp: '2024-01-15 12:20:08',
-      category: 'Malware',
-      source: 'File Upload',
-      affectedUsers: 1,
-      priority: 'high'
-    },
-    {
-      id: 4,
-      title: 'Unusual API Activity',
-      description: 'Abnormal API call patterns detected',
-      severity: 'low',
-      status: 'monitoring',
-      timestamp: '2024-01-15 11:15:33',
-      category: 'API Security',
-      source: 'API Gateway',
-      affectedUsers: 0,
-      priority: 'medium'
-    },
-    {
-      id: 5,
-      title: 'Configuration Drift',
-      description: 'Security settings modified outside of approved process',
-      severity: 'medium',
-      status: 'active',
-      timestamp: '2024-01-15 10:30:45',
-      category: 'Configuration',
-      source: 'Admin Panel',
-      affectedUsers: 5,
-      priority: 'high'
-    }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const [alertsRes, statsRes] = await Promise.all([
+          apiService.getAlerts(1, 20),
+          apiService.getAlertStats(),
+        ]);
+        setAlerts(alertsRes.docs || []);
+        setStats(statsRes || {});
+      } catch (e) {
+        toast({ title: 'Error', description: 'Failed to load alerts', variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const toggleExpanded = (id: number) => {
     const newExpanded = new Set(expandedAlerts);
@@ -159,22 +121,22 @@ export default function AlertsComponent() {
     }
   };
 
-  const filteredAlerts = alerts.filter(alert => {
-    const matchesSearch = alert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         alert.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         alert.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredAlerts = Array.isArray(alerts) ? alerts.filter(alert => {
+    const matchesSearch = (alert.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (alert.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (alert.category || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || 
                          (selectedFilter === 'active' && alert.status === 'active') ||
                          (selectedFilter === 'resolved' && alert.status === 'resolved') ||
                          (selectedFilter === 'critical' && alert.severity === 'critical');
     return matchesSearch && matchesFilter;
-  });
+  }) : [];
 
   const alertStats = {
-    total: alerts.length,
-    active: alerts.filter(a => a.status === 'active').length,
-    critical: alerts.filter(a => a.severity === 'critical').length,
-    resolved: alerts.filter(a => a.status === 'resolved').length
+    total: stats?.totalAlerts ?? alerts.length,
+    active: stats?.activeAlerts ?? alerts.filter(a => a.status === 'active').length,
+    critical: stats?.criticalAlerts ?? alerts.filter(a => a.severity === 'critical').length,
+    resolved: stats?.resolvedAlerts ?? alerts.filter(a => a.status === 'resolved').length
   };
 
   return (
@@ -201,7 +163,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.total -5}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.total}</h3>
             <p className="text-gray-600">Total Alerts</p>
           </CardContent>
         </Card>
@@ -211,7 +173,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
               <Bell className="h-8 w-8 text-orange-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.active - 2}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.active}</h3>
             <p className="text-gray-600">Active Alerts</p>
           </CardContent>
         </Card>
@@ -221,7 +183,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.critical - 1}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.critical}</h3>
             <p className="text-gray-600">Critical</p>
           </CardContent>
         </Card>
@@ -231,7 +193,7 @@ export default function AlertsComponent() {
             <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.resolved - 1}</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">{alertStats.resolved}</h3>
             <p className="text-gray-600">Resolved</p>
           </CardContent>
         </Card>
@@ -292,7 +254,11 @@ export default function AlertsComponent() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="space-y-2">
-            {filteredAlerts.map((alert) => (
+            {isLoading ? (
+              <div className="p-8 text-center text-gray-500">Loading alerts...</div>
+            ) : filteredAlerts.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">No alerts found</div>
+            ) : filteredAlerts.map((alert) => (
               <div key={alert.id} className="border border-gray-200 rounded-xl overflow-hidden">
                 {/* Main Alert Row */}
                 <div className="p-4 hover:bg-gray-50 transition-colors duration-200">
@@ -310,7 +276,7 @@ export default function AlertsComponent() {
                           <div className="flex items-center gap-4 text-sm text-gray-500">
                             <span className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              {alert.timestamp}
+                              {new Date(alert.createdAt).toLocaleString()}
                             </span>
                             <span className="flex items-center gap-1">
                               <Shield className="h-4 w-4" />
@@ -360,7 +326,7 @@ export default function AlertsComponent() {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600">Alert ID:</span>
-                            <span className="font-mono">#{alert.id.toString().padStart(6, '0')}</span>
+                            <span className="font-mono">#{String(alert.id).toString().slice(-6)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">Severity:</span>
@@ -384,7 +350,15 @@ export default function AlertsComponent() {
                             <Eye className="h-4 w-4 mr-2" />
                             Investigate
                           </Button>
-                          <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
+                          <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50" onClick={async () => {
+                              try {
+                                await apiService.resolveAlert(alert.id);
+                                setAlerts((prev) => prev.map((a) => a.id === alert.id ? { ...a, status: 'resolved' } : a));
+                                toast({ title: 'Resolved', description: 'Alert resolved successfully' });
+                              } catch {
+                                toast({ title: 'Error', description: 'Failed to resolve alert', variant: 'destructive' });
+                              }
+                            }}>
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Resolve
                           </Button>
@@ -392,7 +366,15 @@ export default function AlertsComponent() {
                             <Clock className="h-4 w-4 mr-2" />
                             Snooze
                           </Button>
-                          <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                          <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={async () => {
+                              try {
+                                await apiService.deleteAlert(alert.id);
+                                setAlerts((prev) => prev.filter((a) => a.id !== alert.id));
+                                toast({ title: 'Deleted', description: 'Alert deleted' });
+                              } catch {
+                                toast({ title: 'Error', description: 'Failed to delete alert', variant: 'destructive' });
+                              }
+                            }}>
                             <X className="h-4 w-4 mr-2" />
                             Dismiss
                           </Button>
@@ -411,7 +393,20 @@ export default function AlertsComponent() {
       <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
         <CardContent className="p-6">
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <Button className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300" onClick={async () => {
+              try {
+                const res = await apiService.acknowledgeAllAlerts();
+                toast({ title: 'Acknowledged', description: `${res.acknowledgedCount} alerts acknowledged` });
+                const [alertsRes, statsRes] = await Promise.all([
+                  apiService.getAlerts(1, 20),
+                  apiService.getAlertStats(),
+                ]);
+                setAlerts(alertsRes.docs || []);
+                setStats(statsRes || {});
+              } catch {
+                toast({ title: 'Error', description: 'Failed to acknowledge alerts', variant: 'destructive' });
+              }
+            }}>
               <AlertTriangle className="h-5 w-5 mr-2" />
               Acknowledge All
             </Button>
