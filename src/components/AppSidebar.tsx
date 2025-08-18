@@ -36,7 +36,7 @@ export function AppSidebar() {
       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200";
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <div className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center gap-3">

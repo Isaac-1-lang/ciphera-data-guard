@@ -14,8 +14,8 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar />
-      
-      <div className="flex-1 flex flex-col">
+    
+      <div className="flex-1 flex ml-60 p-6 flex-col">
         {/* Header */}
         <header className="h-16 flex items-center justify-between px-6 border-b border-border/50 bg-card/50 backdrop-blur-sm">
           <div className="flex items-center gap-4">
