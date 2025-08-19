@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiService } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,12 +16,16 @@ import {
   Clock,
   Eye,
   Mail,
-  Zap
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 
 export default function ReportsComponent() {
   const [selectedReport, setSelectedReport] = useState<string>('security');
   const [dateRange, setDateRange] = useState('7d');
+  const [isLoading, setIsLoading] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const reportTypes = [
     {
@@ -57,19 +62,32 @@ export default function ReportsComponent() {
     }
   ];
 
-  const mockReportData = {
+  // Load report data from API
+  const loadReportData = async () => {
+    setIsLoading(true);
+    try {
+      const [analytics, dashboard] = await Promise.all([
+        apiService.getAnalytics({ type: selectedReport, period: dateRange }),
+        apiService.getDashboardData()
+      ]);
+      
+      // Process and structure the data for reports
+      const processedData = {
     security: {
-      totalScans: 0,
-      threatsDetected: 0,
-      cleanScans: 0,
-      detectionRate: 0,
-      avgResponseTime: '1ms',
-      topThreats: [
-        { type: 'Personal Information', count: 45, percentage: 50.6 },
-        { type: 'Financial Data', count: 23, percentage: 25.8 },
-        { type: 'Credentials', count: 12, percentage: 13.5 },
-        { type: 'Other', count: 9, percentage: 10.1 }
-      ]
+          totalScans: dashboard?.overview?.totalScans || 0,
+          threatsDetected: dashboard?.overview?.scansWithThreats || 0,
+          cleanScans: dashboard?.overview?.cleanScans || 0,
+          detectionRate: dashboard?.overview?.totalScans > 0 
+            ? Math.round(((dashboard.overview.totalScans - dashboard.overview.scansWithThreats) / dashboard.overview.totalScans) * 100)
+            : 100,
+          avgResponseTime: analytics?.avgResponseTime ? `${analytics.avgResponseTime}ms` : '0ms',
+          topThreats: (dashboard?.threatDistribution || []).map((threat: any) => ({
+            type: threat._id || 'Unknown',
+            count: threat.count || 0,
+            percentage: dashboard.overview.totalScans > 0 
+              ? Math.round((threat.count / dashboard.overview.totalScans) * 100)
+              : 0
+          })).slice(0, 4)
     },
     threats: {
       critical: 0,
@@ -77,30 +95,251 @@ export default function ReportsComponent() {
       medium: 0,
       low: 0,
       trend: '0%',
-      topSources: [
-        { source: 'Email Content', count: 38, percentage: 42.7 },
-        { source: 'Document Uploads', count: 25, percentage: 28.1 },
-        { source: 'API Calls', count: 18, percentage: 20.2 },
-        { source: 'Chat Inputs', count: 8, percentage: 9.0 }
-      ]
+          topSources: (analytics?.threatBreakdown || []).map((threat: any) => ({
+            source: threat._id?.type || 'Unknown',
+            count: threat.count || 0,
+            percentage: analytics.totalThreats > 0 
+              ? Math.round((threat.count / analytics.totalThreats) * 100)
+              : 0
+          })).slice(0, 4)
     },
     performance: {
-      avgScanTime: '140ms',
-      throughput: '485 scans/hour',
-      uptime: 99.9,
-      errorRate: 0.1,
-      peakHours: [
-        { hour: '09:00', scans: 65 },
-        { hour: '10:00', scans: 78 },
-        { hour: '11:00', scans: 82 },
-        { hour: '14:00', scans: 75 },
-        { hour: '15:00', scans: 68 }
-      ]
+          avgScanTime: dashboard?.performance?.avgScanTime ? `${dashboard.performance.avgScanTime}ms` : '0ms',
+          throughput: `${dashboard?.performance?.throughput || 0} scans/hour`,
+          uptime: dashboard?.performance?.uptime || 99.9,
+          errorRate: dashboard?.performance?.errorRate || 0,
+          peakHours: (analytics?.throughput || []).map((hour: any) => ({
+            hour: `${hour._id}:00`,
+            scans: hour.count || 0
+          })).slice(0, 5)
+        }
+      };
+      
+      setReportData(processedData);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Failed to load report data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const getCurrentReportData = () => {
-    return mockReportData[selectedReport as keyof typeof mockReportData];
+    return reportData?.[selectedReport as keyof typeof reportData] || {
+      totalScans: 0,
+      threatsDetected: 0,
+      cleanScans: 0,
+      detectionRate: 0,
+      avgResponseTime: '0ms',
+      topThreats: [],
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      trend: '0%',
+      topSources: [],
+      avgScanTime: '0ms',
+      throughput: '0 scans/hour',
+      uptime: 0,
+      errorRate: 0,
+      peakHours: []
+    };
+  };
+
+  // Load data when component mounts or when report type/date range changes
+  useEffect(() => {
+    loadReportData();
+  }, [selectedReport, dateRange]);
+
+  // Initial data load
+  useEffect(() => {
+    loadReportData();
+  }, []);
+
+  // Export report to PDF
+  const exportReport = () => {
+    if (!reportData) {
+      alert('No report data available to export');
+      return;
+    }
+
+    try {
+      // Create a new window for the report
+      const reportWindow = window.open('', '_blank');
+      if (!reportWindow) {
+        alert('Please allow popups to export the report');
+        return;
+      }
+
+      // Generate HTML content for the report
+      const reportHTML = generateReportHTML();
+      
+      reportWindow.document.write(reportHTML);
+      reportWindow.document.close();
+      
+      // Wait for content to load then print
+      reportWindow.onload = () => {
+        setTimeout(() => {
+          reportWindow.print();
+        }, 500);
+      };
+    } catch (error) {
+      console.error('Failed to export report:', error);
+      alert('Failed to export report');
+    }
+  };
+
+  // Generate HTML content for the PDF report
+  const generateReportHTML = () => {
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    const currentData = getCurrentReportData();
+    
+    let detailedContent = '';
+    
+    if (selectedReport === 'security') {
+      detailedContent = `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Top Threat Categories</h3>
+          ${currentData.topThreats.map((threat: any) => `
+            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 500;">${threat.type}</span>
+                <div style="text-align: right;">
+                  <span style="font-size: 18px; font-weight: bold;">${threat.count}</span>
+                  <span style="color: #6b7280; margin-left: 10px;">(${threat.percentage}%)</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else if (selectedReport === 'threats') {
+      detailedContent = `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Threat Sources</h3>
+          ${currentData.topSources.map((source: any) => `
+            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 500;">${source.source}</span>
+                <div style="text-align: right;">
+                  <span style="font-size: 18px; font-weight: bold;">${source.count}</span>
+                  <span style="color: #6b7280; margin-left: 10px;">(${source.percentage}%)</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else if (selectedReport === 'performance') {
+      detailedContent = `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Peak Activity Hours</h3>
+          ${currentData.peakHours.map((hour: any) => `
+            <div style="margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 500;">${hour.hour}</span>
+                <span style="font-size: 18px; font-weight: bold;">${hour.scans} scans</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Report - Ciphera Data Guard</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 10px; }
+          .summary { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 15px 0; }
+          .summary-item { text-align: center; }
+          .summary-number { font-size: 24px; font-weight: bold; color: #1f2937; }
+          .summary-label { color: #6b7280; font-size: 12px; text-transform: uppercase; margin-top: 5px; }
+          .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          @media print { body { margin: 20px; } .header { page-break-after: avoid; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">🛡️ CIPHERA DATA GUARD</div>
+          <h1>${selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Report</h1>
+          <p>Generated on ${currentDate} at ${currentTime}</p>
+          <p>Time Range: ${dateRange === '24h' ? 'Last 24 Hours' : dateRange === '7d' ? 'Last 7 Days' : dateRange === '30d' ? 'Last 30 Days' : 'Last 90 Days'}</p>
+        </div>
+
+        <div class="summary">
+          <h2 style="margin-bottom: 20px; color: #1f2937;">Key Metrics</h2>
+          <div class="summary-grid">
+            ${selectedReport === 'security' ? `
+              <div class="summary-item">
+                <div class="summary-number">${currentData.totalScans}</div>
+                <div class="summary-label">Total Scans</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.threatsDetected}</div>
+                <div class="summary-label">Threats Detected</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.cleanScans}</div>
+                <div class="summary-label">Clean Scans</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.detectionRate}%</div>
+                <div class="summary-label">Detection Rate</div>
+              </div>
+            ` : selectedReport === 'threats' ? `
+              <div class="summary-item">
+                <div class="summary-number">${currentData.critical}</div>
+                <div class="summary-label">Critical</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.high}</div>
+                <div class="summary-label">High</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.medium}</div>
+                <div class="summary-label">Medium</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.low}</div>
+                <div class="summary-label">Low</div>
+              </div>
+            ` : `
+              <div class="summary-item">
+                <div class="summary-number">${currentData.avgScanTime}</div>
+                <div class="summary-label">Avg Scan Time</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.throughput}</div>
+                <div class="summary-label">Throughput</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.uptime}%</div>
+                <div class="summary-label">Uptime</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-number">${currentData.errorRate}%</div>
+                <div class="summary-label">Error Rate</div>
+              </div>
+            `}
+          </div>
+        </div>
+
+        ${detailedContent}
+
+        <div class="footer">
+          <p>This report was generated by Ciphera Data Guard - Your trusted data protection solution</p>
+          <p>For questions or support, please contact your system administrator</p>
+        </div>
+      </body>
+      </html>
+    `;
   };
 
   return (
@@ -118,6 +357,11 @@ export default function ReportsComponent() {
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Generate comprehensive reports and gain insights into your data security performance
         </p>
+        {lastUpdated && (
+          <p className="text-sm text-gray-500">
+            Last updated: {lastUpdated.toLocaleString()}
+          </p>
+        )}
       </div>
 
       {/* Report Type Selection */}
@@ -127,7 +371,7 @@ export default function ReportsComponent() {
             key={report.id}
             className={`border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer ${
               selectedReport === report.id ? 'ring-2 ring-blue-500' : ''
-            }`}
+            } ${isLoading && selectedReport === report.id ? 'opacity-75' : ''}`}
             onClick={() => setSelectedReport(report.id)}
           >
             <CardContent className="p-6 text-center">
@@ -164,11 +408,20 @@ export default function ReportsComponent() {
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" className="px-6 py-2 rounded-xl">
-                <Filter className="h-5 w-5 mr-2" />
-                Filter
+              <Button 
+                variant="outline" 
+                className="px-6 py-2 rounded-xl"
+                onClick={loadReportData}
+                disabled={isLoading}
+              >
+                <RefreshCw className={`h-5 w-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                {isLoading ? 'Loading...' : 'Refresh'}
               </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-xl">
+              <Button 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-xl"
+                onClick={exportReport}
+                disabled={isLoading || !reportData}
+              >
                 <Download className="h-5 w-5 mr-2" />
                 Export Report
               </Button>
@@ -188,7 +441,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-blue-100 rounded-xl w-fit mx-auto mb-4">
                     <BarChart3 className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().totalScans}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().totalScans
+                    )}
+                  </h3>
                   <p className="text-gray-600">Total Scans</p>
                 </CardContent>
               </Card>
@@ -198,7 +457,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-orange-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().threatsDetected}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().threatsDetected
+                    )}
+                  </h3>
                   <p className="text-gray-600">Threats Detected</p>
                 </CardContent>
               </Card>
@@ -208,7 +473,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
                     <Shield className="h-8 w-8 text-green-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().cleanScans}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().cleanScans
+                    )}
+                  </h3>
                   <p className="text-gray-600">Clean Scans</p>
                 </CardContent>
               </Card>
@@ -218,7 +489,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-purple-100 rounded-xl w-fit mx-auto mb-4">
                     <TrendingUp className="h-8 w-8 text-purple-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().detectionRate}%</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      `${getCurrentReportData().detectionRate}%`
+                    )}
+                  </h3>
                   <p className="text-gray-600">Detection Rate</p>
                 </CardContent>
               </Card>
@@ -232,7 +509,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-red-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().critical}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().critical
+                    )}
+                  </h3>
                   <p className="text-gray-600">Critical</p>
                 </CardContent>
               </Card>
@@ -242,7 +525,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-orange-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-orange-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().high}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().high
+                    )}
+                  </h3>
                   <p className="text-gray-600">High</p>
                 </CardContent>
               </Card>
@@ -252,7 +541,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-yellow-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-yellow-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().medium}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().medium
+                    )}
+                  </h3>
                   <p className="text-gray-600">Medium</p>
                 </CardContent>
               </Card>
@@ -262,7 +557,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-blue-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().trend}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().trend
+                    )}
+                  </h3>
                   <p className="text-gray-600">Trend</p>
                 </CardContent>
               </Card>
@@ -276,7 +577,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-blue-100 rounded-xl w-fit mx-auto mb-4">
                     <Clock className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().avgScanTime}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().avgScanTime
+                    )}
+                  </h3>
                   <p className="text-gray-600">Avg Scan Time</p>
                 </CardContent>
               </Card>
@@ -286,7 +593,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-green-100 rounded-xl w-fit mx-auto mb-4">
                     <TrendingUp className="h-8 w-8 text-green-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().throughput}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      getCurrentReportData().throughput
+                    )}
+                  </h3>
                   <p className="text-gray-600">Throughput</p>
                 </CardContent>
               </Card>
@@ -296,7 +609,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-purple-100 rounded-xl w-fit mx-auto mb-4">
                     <Zap className="h-8 w-8 text-purple-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().uptime}%</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      `${getCurrentReportData().uptime}%`
+                    )}
+                  </h3>
                   <p className="text-gray-600">Uptime</p>
                 </CardContent>
               </Card>
@@ -306,7 +625,13 @@ export default function ReportsComponent() {
                   <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-4">
                     <AlertTriangle className="h-8 w-8 text-red-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{getCurrentReportData().errorRate}%</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gray-300 h-8 w-16 rounded mx-auto"></div>
+                    ) : (
+                      `${getCurrentReportData().errorRate}%`
+                    )}
+                  </h3>
                   <p className="text-gray-600">Error Rate</p>
                 </CardContent>
               </Card>
@@ -322,6 +647,11 @@ export default function ReportsComponent() {
                 <BarChart3 className="h-6 w-6 text-blue-600" />
               </div>
               Detailed Analysis
+              {isLoading && (
+                <div className="ml-2">
+                  <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+                </div>
+              )}
             </CardTitle>
             <CardDescription className="text-gray-600">
               In-depth breakdown of {selectedReport} data
@@ -331,8 +661,25 @@ export default function ReportsComponent() {
             {selectedReport === 'security' && (
               <div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-4">Top Threat Categories</h4>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="animate-pulse bg-gray-300 w-4 h-4 rounded-full"></div>
+                          <div className="animate-pulse bg-gray-300 h-4 w-32 rounded"></div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="animate-pulse bg-gray-300 h-6 w-8 rounded"></div>
+                          <div className="animate-pulse bg-gray-300 h-4 w-16 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                 <div className="space-y-3">
-                  {getCurrentReportData().topThreats.map((threat, index) => (
+                    {getCurrentReportData().topThreats.length > 0 ? (
+                      getCurrentReportData().topThreats.map((threat, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
@@ -343,16 +690,37 @@ export default function ReportsComponent() {
                         <span className="text-sm text-gray-500">({threat.percentage}%)</span>
                       </div>
                     </div>
-                  ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No threat data available</p>
+                    )}
                 </div>
+                )}
               </div>
             )}
 
             {selectedReport === 'threats' && (
               <div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-4">Threat Sources</h4>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="animate-pulse bg-gray-300 w-4 h-4 rounded-full"></div>
+                          <div className="animate-pulse bg-gray-300 h-4 w-32 rounded"></div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="animate-pulse bg-gray-300 h-6 w-8 rounded"></div>
+                          <div className="animate-pulse bg-gray-300 h-4 w-16 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                 <div className="space-y-3">
-                  {getCurrentReportData().topSources.map((source, index) => (
+                    {getCurrentReportData().topSources.length > 0 ? (
+                      getCurrentReportData().topSources.map((source, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 bg-orange-600 rounded-full"></div>
@@ -363,16 +731,34 @@ export default function ReportsComponent() {
                         <span className="text-sm text-gray-500">({source.percentage}%)</span>
                       </div>
                     </div>
-                  ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No threat source data available</p>
+                    )}
                 </div>
+                )}
               </div>
             )}
 
             {selectedReport === 'performance' && (
               <div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-4">Peak Activity Hours</h4>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="animate-pulse bg-gray-300 w-4 h-4 rounded-full"></div>
+                          <div className="animate-pulse bg-gray-300 h-4 w-20 rounded"></div>
+                        </div>
+                        <div className="animate-pulse bg-gray-300 h-6 w-24 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
                 <div className="space-y-3">
-                  {getCurrentReportData().peakHours.map((hour, index) => (
+                    {getCurrentReportData().peakHours.length > 0 ? (
+                      getCurrentReportData().peakHours.map((hour, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 bg-green-600 rounded-full"></div>
@@ -380,8 +766,12 @@ export default function ReportsComponent() {
                       </div>
                       <span className="text-lg font-semibold text-gray-800">{hour.scans} scans</span>
                     </div>
-                  ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No peak activity data available</p>
+                    )}
                 </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -399,7 +789,12 @@ export default function ReportsComponent() {
                 <Mail className="h-5 w-5 mr-2" />
                 Schedule Report
               </Button>
-              <Button variant="outline" className="px-8 py-3 rounded-xl">
+              <Button 
+                variant="outline" 
+                className="px-8 py-3 rounded-xl"
+                onClick={exportReport}
+                disabled={isLoading || !reportData}
+              >
                 <Download className="h-5 w-5 mr-2" />
                 Download PDF
               </Button>

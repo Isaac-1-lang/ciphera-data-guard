@@ -126,6 +126,14 @@ class ApiService {
     return { message: res.message };
   }
 
+  async requestEmailChange(data: { newEmail: string; currentPassword: string }): Promise<{ message: string }> {
+    const res = await this.request<{ success: boolean; message: string }>('/auth/request-email-change', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return { message: res.message };
+  }
+
   // Scan endpoints
   async scanText(content: string): Promise<any> {
     const res = await this.request<{ success: boolean; data: any; message: string }>('/scan/text', {

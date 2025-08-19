@@ -117,6 +117,202 @@ export default function AnalyticsDashboard() {
     load()
   }
 
+  // Export analytics report to PDF
+  const exportAnalyticsToPDF = () => {
+    if (!metrics && !threatTypeData.length && !scanTrends.length) {
+      return
+    }
+
+    try {
+      // Create a new window for the report
+      const reportWindow = window.open('', '_blank')
+      if (!reportWindow) {
+        return
+      }
+
+      // Generate HTML content for the report
+      const reportHTML = generateAnalyticsReportHTML()
+      
+      reportWindow.document.write(reportHTML)
+      reportWindow.document.close()
+      
+      // Wait for content to load then print
+      reportWindow.onload = () => {
+        setTimeout(() => {
+          reportWindow.print()
+        }, 500)
+      }
+    } catch (error) {
+      console.error('Failed to export analytics:', error)
+    }
+  }
+
+  // Generate HTML content for the analytics report
+  const generateAnalyticsReportHTML = () => {
+    const currentDate = new Date().toLocaleDateString()
+    const currentTime = new Date().toLocaleTimeString()
+    
+    const threatTypeRows = threatTypeData.map((item, index) => `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 12px; text-align: left;">${item.name}</td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="
+            background: ${item.color}; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: bold;
+          ">
+            ${item.value}
+          </span>
+        </td>
+      </tr>
+    `).join('')
+
+    const scanTrendRows = scanTrends.map((item, index) => `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 12px; text-align: center;">${item.date}</td>
+        <td style="padding: 12px; text-align: center;">${item.scans}</td>
+        <td style="padding: 12px; text-align: center;">${item.alerts}</td>
+      </tr>
+    `).join('')
+
+    const severityRows = severityDistribution.map((item, index) => `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 12px; text-align: left;">${item.name}</td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="
+            background: ${item.name === 'Critical' ? '#dc2626' : 
+                         item.name === 'High' ? '#7c3aed' : 
+                         item.name === 'Medium' ? '#f59e0b' : '#10b981'}; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: bold;
+          ">
+            ${item.value}
+          </span>
+        </td>
+      </tr>
+    `).join('')
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Analytics Report - Ciphera Data Guard</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 10px; }
+          .summary { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 15px 0; }
+          .summary-item { text-align: center; }
+          .summary-number { font-size: 24px; font-weight: bold; color: #1f2937; }
+          .summary-label { color: #6b7280; font-size: 12px; text-transform: uppercase; margin-top: 5px; }
+          .table-container { margin: 30px 0; overflow-x: auto; }
+          table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; }
+          th { background: #f3f4f6; padding: 12px; text-align: left; font-weight: bold; border-bottom: 2px solid #e5e7eb; }
+          td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+          .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          .section { margin: 25px 0; }
+          .section-title { font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+          @media print { body { margin: 20px; } .header { page-break-after: avoid; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">🛡️ CIPHERA DATA GUARD</div>
+          <h1>Analytics Report</h1>
+          <p>Generated on ${currentDate} at ${currentTime}</p>
+          <p>Time Range: ${timeRange === '24h' ? 'Last 24 Hours' : timeRange === '7d' ? 'Last 7 Days' : timeRange === '30d' ? 'Last 30 Days' : 'Last 90 Days'}</p>
+        </div>
+
+        <div class="summary">
+          <h2 style="margin-bottom: 20px; color: #1f2937;">Key Metrics</h2>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-number">${metrics?.totalScans || 0}</div>
+              <div class="summary-label">Total Scans</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${metrics?.threatsDetected || 0}</div>
+              <div class="summary-label">Threats Detected</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${metrics?.avgResponseTime || 0}ms</div>
+              <div class="summary-label">Avg Response Time</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${metrics?.successRate || 0}%</div>
+              <div class="summary-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">Threat Type Distribution</h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 70%;">Threat Type</th>
+                  <th style="width: 30%; text-align: center;">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${threatTypeRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">Scan Trends</h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 33%; text-align: center;">Date</th>
+                  <th style="width: 33%; text-align: center;">Scans</th>
+                  <th style="width: 34%; text-align: center;">Alerts</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${scanTrendRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">Threat Severity Distribution</h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 70%;">Severity Level</th>
+                  <th style="width: 30%; text-align: center;">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${severityRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>This report was generated by Ciphera Data Guard - Your trusted data protection solution</p>
+          <p>For questions or support, please contact your system administrator</p>
+        </div>
+      </body>
+      </html>
+    `
+  }
+
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', { 
       month: 'short', 
@@ -165,7 +361,10 @@ export default function AnalyticsDashboard() {
               )}
               Refresh
             </Button>
-            <Button className="bg-black text-white hover:bg-gray-800">
+            <Button 
+              onClick={exportAnalyticsToPDF}
+              className="bg-black text-white hover:bg-gray-800"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>

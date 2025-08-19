@@ -30,6 +30,8 @@ export default function HistoryComponent() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,11 +39,18 @@ export default function HistoryComponent() {
     loadStats();
   }, [currentPage]);
 
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedFilter]);
+
   const loadHistoryData = async () => {
     try {
       setIsLoading(true);
-      const response = await apiService.getScanHistory(currentPage, 10);
+      const response = await apiService.getScanHistory(currentPage, 5); // Limit to 5 scans per page
       setHistoryData(response.docs || []);
+      setTotalPages(response.totalPages || 1);
+      setTotalDocs(response.totalDocs || 0);
     } catch (error) {
       toast({
         title: "Error",
@@ -60,6 +69,206 @@ export default function HistoryComponent() {
     } catch (error) {
       console.error('Failed to load stats:', error);
     }
+  };
+
+  // Handle page navigation
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Export scan history to PDF
+  const exportHistoryToPDF = () => {
+    if (!historyData || historyData.length === 0) {
+      toast({
+        title: "Export Failed",
+        description: "No scan history available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create a new window for the report
+      const reportWindow = window.open('', '_blank');
+      if (!reportWindow) {
+        toast({
+          title: "Export Failed",
+          description: "Please allow popups to export the report",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Generate HTML content for the report
+      const reportHTML = generateHistoryReportHTML();
+      
+      reportWindow.document.write(reportHTML);
+      reportWindow.document.close();
+      
+      // Wait for content to load then print
+      reportWindow.onload = () => {
+        setTimeout(() => {
+          reportWindow.print();
+        }, 500);
+      };
+
+      toast({
+        title: "Export Started",
+        description: "History report opened in new window. Use browser print to save as PDF.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to generate history report",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Generate HTML content for the history report
+  const generateHistoryReportHTML = () => {
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    
+    const historyRows = historyData.map((item: any, index: number) => `
+      <tr style="border-bottom: 1px solid #e5e7eb;">
+        <td style="padding: 12px; text-align: left;">
+          <div style="font-weight: 500;">${item.type}</div>
+          <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+            ${item.content || item.fileName || 'N/A'}
+          </div>
+        </td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="
+            background: ${item.highestSeverity === 'critical' ? '#dc2626' : 
+                         item.highestSeverity === 'high' ? '#7c3aed' : 
+                         item.highestSeverity === 'medium' ? '#f59e0b' : 
+                         item.highestSeverity === 'low' ? '#10b981' : '#6b7280'}; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: bold;
+          ">
+            ${item.highestSeverity?.toUpperCase() || 'CLEAN'}
+          </span>
+        </td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="font-weight: bold; font-size: 16px;">${item.threats?.length || 0}</span>
+        </td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="
+            background: ${item.status === 'completed' ? '#10b981' : 
+                         item.status === 'failed' ? '#dc2626' : '#f59e0b'}; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: bold;
+          ">
+            ${item.status?.toUpperCase() || 'UNKNOWN'}
+          </span>
+        </td>
+        <td style="padding: 12px; text-align: center;">
+          ${new Date(item.createdAt).toLocaleDateString()}
+        </td>
+        <td style="padding: 12px; text-align: center;">
+          ${item.scanTime ? `${item.scanTime}ms` : 'N/A'}
+        </td>
+      </tr>
+    `).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Scan History Report - Ciphera Data Guard</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #3b82f6; margin-bottom: 10px; }
+          .summary { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 15px 0; }
+          .summary-item { text-align: center; }
+          .summary-number { font-size: 24px; font-weight: bold; color: #1f2937; }
+          .summary-label { color: #6b7280; font-size: 12px; text-transform: uppercase; margin-top: 5px; }
+          .table-container { margin: 30px 0; overflow-x: auto; }
+          table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; }
+          th { background: #f3f4f6; padding: 12px; text-align: left; font-weight: bold; border-bottom: 2px solid #e5e7eb; }
+          td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+          .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          @media print { body { margin: 20px; } .header { page-break-after: avoid; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">🛡️ CIPHERA DATA GUARD</div>
+          <h1>Scan History Report</h1>
+          <p>Generated on ${currentDate} at ${currentTime}</p>
+        </div>
+
+        <div class="summary">
+          <h2 style="margin-bottom: 20px; color: #1f2937;">Summary Statistics</h2>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-number">${stats?.totalScans || 0}</div>
+              <div class="summary-label">Total Scans</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${stats?.cleanScans || 0}</div>
+              <div class="summary-label">Clean Scans</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${stats?.scansWithThreats || 0}</div>
+              <div class="summary-label">Threats Detected</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number">${stats?.avgScanTime ? `${stats.avgScanTime}ms` : '0ms'}</div>
+              <div class="summary-label">Avg Scan Time</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <h2 style="margin-bottom: 20px; color: #1f2937;">Detailed Scan History</h2>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 25%;">Content/File</th>
+                <th style="width: 15%; text-align: center;">Severity</th>
+                <th style="width: 12%; text-align: center;">Threats</th>
+                <th style="width: 15%; text-align: center;">Status</th>
+                <th style="width: 15%; text-align: center;">Date</th>
+                <th style="width: 18%; text-align: center;">Scan Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${historyRows}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="footer">
+          <p>This report was generated by Ciphera Data Guard - Your trusted data protection solution</p>
+          <p>For questions or support, please contact your system administrator</p>
+        </div>
+      </body>
+      </html>
+    `;
   };
 
   const toggleExpanded = (id: string) => {
@@ -151,7 +360,7 @@ export default function HistoryComponent() {
             <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl w-fit mx-auto mb-4">
               <AlertTriangle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.threatsDetected || 0}</h3>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.scansWithThreats || 0}</h3>
             <p className="text-muted-foreground">Threats Detected</p>
           </CardContent>
         </Card>
@@ -161,7 +370,7 @@ export default function HistoryComponent() {
             <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl w-fit mx-auto mb-4">
               <Clock className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.avgScanTime || '0ms'}</h3>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{stats?.avgScanTime ? `${stats.avgScanTime}ms` : '0ms'}</h3>
             <p className="text-muted-foreground">Avg Scan Time</p>
           </CardContent>
         </Card>
@@ -197,7 +406,10 @@ export default function HistoryComponent() {
                 Advanced
               </Button>
               
-              <Button className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-6 py-3 rounded-xl">
+              <Button 
+                onClick={exportHistoryToPDF}
+                className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-6 py-3 rounded-xl"
+              >
                 <Download className="h-5 w-5 mr-2" />
                 Export
               </Button>
@@ -311,6 +523,14 @@ export default function HistoryComponent() {
                               <span className="text-muted-foreground">File Size:</span>
                               <span>{item.fileSize || item.textLength || 'N/A'}</span>
                             </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Threat Count:</span>
+                              <span>{item.threatCount || 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Highest Severity:</span>
+                              <span className="capitalize">{item.highestSeverity || 'none'}</span>
+                            </div>
                           </div>
                         </div>
                         
@@ -332,6 +552,40 @@ export default function HistoryComponent() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Threats Section - Show when threats are detected */}
+                      {item.threats && item.threats.length > 0 && (
+                        <div className="col-span-1 md:col-span-2">
+                          <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-orange-500" />
+                            Threats Detected
+                          </h4>
+                          <div className="space-y-3">
+                            {item.threats.map((threat: any, index: number) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                  <Badge 
+                                    variant={threat.severity === 'critical' ? 'destructive' : threat.severity === 'high' ? 'secondary' : 'outline'}
+                                    className="font-semibold"
+                                  >
+                                    {threat.severity.toUpperCase()}
+                                  </Badge>
+                                  <div>
+                                    <p className="font-medium text-foreground">{threat.type}</p>
+                                    {threat.details && (
+                                      <p className="text-sm text-muted-foreground">{threat.details}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-lg font-bold text-foreground">{threat.count}</p>
+                                  <p className="text-sm text-muted-foreground">items</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -344,24 +598,68 @@ export default function HistoryComponent() {
       {/* Pagination */}
       <div className="flex justify-center">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="px-3 py-2 rounded-lg">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="px-3 py-2 rounded-lg"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1 || isLoading}
+          >
             Previous
           </Button>
+          
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" className="px-3 py-2 rounded-lg bg-blue-600 text-white border-blue-600">
-              1
-            </Button>
-            <Button variant="outline" size="sm" className="px-3 py-2 rounded-lg">
-              2
-            </Button>
-            <Button variant="outline" size="sm" className="px-3 py-2 rounded-lg">
-              3
-            </Button>
+            {/* Generate page numbers dynamically */}
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
+              // Show current page, first page, last page, and pages around current
+              const shouldShow = 
+                pageNumber === 1 || 
+                pageNumber === totalPages || 
+                Math.abs(pageNumber - currentPage) <= 1;
+              
+              if (shouldShow) {
+                return (
+                                     <Button
+                     key={pageNumber}
+                     variant={pageNumber === currentPage ? "default" : "outline"}
+                     size="sm"
+                     className={`px-3 py-2 rounded-lg ${
+                       pageNumber === currentPage 
+                         ? "bg-primary text-primary-foreground" 
+                         : ""
+                     }`}
+                     onClick={() => handlePageChange(pageNumber)}
+                     disabled={isLoading}
+                   >
+                     {pageNumber}
+                   </Button>
+                );
+              } else if (
+                (pageNumber === currentPage - 2 && currentPage > 3) ||
+                (pageNumber === currentPage + 2 && currentPage < totalPages - 2)
+              ) {
+                return <span key={pageNumber} className="px-2 text-muted-foreground">...</span>;
+              }
+              return null;
+            })}
           </div>
-          <Button variant="outline" size="sm" className="px-3 py-2 rounded-lg">
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="px-3 py-2 rounded-lg"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || isLoading}
+          >
             Next
           </Button>
         </div>
+      </div>
+      
+      {/* Page Info */}
+      <div className="text-center text-sm text-muted-foreground">
+        Showing {((currentPage - 1) * 5) + 1} to {Math.min(currentPage * 5, totalDocs)} of {totalDocs} scans
       </div>
     </div>
   );
