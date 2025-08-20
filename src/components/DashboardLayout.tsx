@@ -2,8 +2,6 @@ import { AppSidebar } from "./AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, User, LogOut, Menu, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "./ThemeToggle";
-import { apiService } from "@/lib/api";
 import { useState } from "react";
 
 interface DashboardLayoutProps {
@@ -57,7 +55,6 @@ export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
           </div>
           
           <div className="flex items-center gap-2 lg:gap-3">
-            <ThemeToggle />
             
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
