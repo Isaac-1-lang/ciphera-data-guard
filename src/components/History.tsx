@@ -379,7 +379,7 @@ export default function HistoryComponent() {
       {/* Search and Filters */}
       <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -390,7 +390,7 @@ export default function HistoryComponent() {
               />
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
               <select
                 value={selectedFilter}
                 onChange={(e) => setSelectedFilter(e.target.value)}
@@ -401,18 +401,20 @@ export default function HistoryComponent() {
                 <option value="clean">Clean Scans</option>
               </select>
               
-              <Button variant="outline" className="px-6 py-3 rounded-xl">
-                <Filter className="h-5 w-5 mr-2" />
-                Advanced
-              </Button>
-              
-              <Button 
-                onClick={exportHistoryToPDF}
-                className="bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-6 py-3 rounded-xl"
-              >
-                <Download className="h-5 w-5 mr-2" />
-                Export
-              </Button>
+              <div className="flex sm:flex-row gap-2 sm:gap-3 w-full">
+                <Button variant="outline" className="w-full sm:w-auto px-4 py-3 rounded-xl text-sm sm:text-base">
+                  <Filter className="h-5 w-5 mr-2" />
+                  Advanced
+                </Button>
+                
+                <Button 
+                  onClick={exportHistoryToPDF}
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground px-4 sm:px-6 py-3 rounded-xl text-sm sm:text-base"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

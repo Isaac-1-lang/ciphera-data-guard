@@ -223,23 +223,25 @@ export default function SettingsPage() {
           </div>
           
           {/* User Info Card */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xl font-bold">
-                  {firstName && lastName ? `${firstName.charAt(0)}${lastName.charAt(0)}` : 'U'}
-                </span>
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 lg:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg lg:text-xl font-bold">
+                    {firstName && lastName ? `${firstName.charAt(0)}${lastName.charAt(0)}` : 'U'}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg lg:text-xl font-bold text-gray-900 truncate">
+                    {firstName && lastName ? `${firstName} ${lastName}` : 'User Profile'}
+                  </h2>
+                  <p className="text-gray-600 text-sm lg:text-base truncate">{email || 'Loading...'}</p>
+                  <p className="text-xs text-gray-500 truncate">Account ID: {username || 'Loading...'}</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {firstName && lastName ? `${firstName} ${lastName}` : 'User Profile'}
-                </h2>
-                <p className="text-gray-600">{email || 'Loading...'}</p>
-                <p className="text-sm text-gray-500">Account ID: {username || 'Loading...'}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Member since</p>
-                <p className="text-sm font-medium text-gray-900">
+              <div className="sm:text-right">
+                <p className="text-xs lg:text-sm text-gray-500">Member since</p>
+                <p className="text-sm lg:text-base font-medium text-gray-900">
                   {new Date().toLocaleDateString('en-US', { 
                     year: 'numeric', 
                     month: 'long' 

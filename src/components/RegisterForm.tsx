@@ -45,45 +45,47 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
 
   return (
     <Card className="w-full max-w-md bg-gradient-card shadow-elegant border-border/50 animate-fade-in">
-      <CardHeader className="text-center space-y-2">
+      <CardHeader className="text-center space-y-2 px-6 pt-6 pb-4">
         <div className="mx-auto mb-4 p-3 bg-gradient-accent rounded-full w-fit">
-          <UserPlus className="h-8 w-8 text-accent-foreground" />
+          <UserPlus className="h-6 w-6 lg:h-8 lg:w-8 text-accent-foreground" />
         </div>
-        <CardTitle className="text-2xl font-bold bg-gradient-accent bg-clip-text text-transparent">
+        <CardTitle className="text-xl lg:text-2xl font-bold bg-gradient-accent bg-clip-text text-transparent">
           Join Ciphera
         </CardTitle>
-        <CardDescription className="text-muted-foreground">
+        <CardDescription className="text-muted-foreground text-sm lg:text-base">
           Create your secure account to get started
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 pb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              type="text"
-              placeholder="Enter your first name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="bg-background/50 border-border/60 focus:border-accent"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-sm lg:text-base">First Name</Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Enter your first name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="bg-background/50 border-border/60 focus:border-accent h-10 lg:h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-sm lg:text-base">Last Name</Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Enter your last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="bg-background/50 border-border/60 focus:border-accent h-10 lg:h-11"
+              />
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              type="text"
-              placeholder="Enter your last name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className="bg-background/50 border-border/60 focus:border-accent"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-sm lg:text-base">Username</Label>
             <Input
               id="username"
               type="text"
@@ -91,11 +93,11 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="bg-background/50 border-border/60 focus:border-accent"
+              className="bg-background/50 border-border/60 focus:border-accent h-10 lg:h-11"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm lg:text-base">Email</Label>
             <Input
               id="email"
               type="email"
@@ -103,20 +105,20 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-background/50 border-border/60 focus:border-accent"
+              className="bg-background/50 border-border/60 focus:border-accent h-10 lg:h-11"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm lg:text-base">Password</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-background/50 border-border/60 focus:border-accent pr-10"
+                className="bg-background/50 border-border/60 focus:border-accent pr-10 h-10 lg:h-11"
               />
               <Button
                 type="button"
@@ -134,7 +136,7 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-sm lg:text-base">Confirm Password</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -143,7 +145,7 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="bg-background/50 border-border/60 focus:border-accent pr-10"
+                className="bg-background/50 border-border/60 focus:border-accent pr-10 h-10 lg:h-11"
               />
               <Button
                 type="button"
@@ -162,9 +164,9 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
           </div>
           <Button
             type="submit"
-            variant="hero"
+            variant="security"
             size="lg"
-            className="w-full"
+            className="w-full h-10 lg:h-11 mt-6"
             disabled={isLoading}
           >
             {isLoading ? "Creating account..." : "Create Account"}
@@ -175,7 +177,7 @@ export function RegisterForm({ onToggleForm }: RegisterFormProps) {
             Already have an account?{" "}
             <Button
               variant="link"
-              className="p-0 h-auto font-semibold text-accent hover:text-accent-glow"
+              className="p-0 h-auto font-semibold text-accent hover:text-accent-glow text-sm"
               onClick={onToggleForm}
             >
               Sign in

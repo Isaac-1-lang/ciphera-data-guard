@@ -202,7 +202,7 @@ export default function AlertsComponent() {
       {/* Search and Filters */}
       <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
@@ -213,11 +213,11 @@ export default function AlertsComponent() {
               />
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
               <select
                 value={selectedFilter}
                 onChange={(e) => setSelectedFilter(e.target.value)}
-                className="px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                className="px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white w-full sm:w-auto"
               >
                 <option value="all">All Alerts</option>
                 <option value="active">Active Only</option>
@@ -225,15 +225,17 @@ export default function AlertsComponent() {
                 <option value="critical">Critical Only</option>
               </select>
               
-              <Button variant="outline" className="px-6 py-3 rounded-xl">
-                <Filter className="h-5 w-5 mr-2" />
-                Advanced
-              </Button>
-              
-              <Button className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-6 py-3 rounded-xl">
-                <Zap className="h-5 w-5 mr-2" />
-                New Alert
-              </Button>
+              <div className="flex sm:flex-row gap-2 sm:gap-3 w-full">
+                <Button variant="outline" className="w-full sm:w-auto px-4 py-3 rounded-xl text-sm sm:text-base">
+                  <Filter className="h-5 w-5 mr-2" />
+                  Advanced
+                </Button>
+                
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-4 sm:px-6 py-3 rounded-xl text-sm sm:text-base">
+                  <Zap className="h-5 w-5 mr-2" />
+                  New Alert
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

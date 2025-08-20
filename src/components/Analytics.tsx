@@ -322,19 +322,19 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto p-8 max-w-7xl space-y-8">
+      <div className="container mx-auto p-4 lg:p-8 max-w-7xl space-y-6 lg:space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 border-b border-gray-200 pb-6">
-          <div className="space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 border-b border-gray-200 pb-4 lg:pb-6">
+          <div className="space-y-2 lg:space-y-3">
             <div className="flex items-center gap-3">
-              <BarChart3 className="h-8 w-8 text-black" />
-              <h1 className="text-4xl font-bold text-black">Analytics & Overview</h1>
+              <BarChart3 className="h-6 w-6 lg:h-8 lg:w-8 text-black" />
+              <h1 className="text-2xl lg:text-4xl font-bold text-black">Analytics & Overview</h1>
             </div>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-sm lg:text-lg">
               Monitor prompt scanning activity and security insights.
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
               <Calendar className="h-4 w-4 text-gray-600" />
               <select 
@@ -372,20 +372,20 @@ export default function AnalyticsDashboard() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <Card className="border-2 border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-gray-600 text-sm font-medium">Total Scans</p>
-                  <p className="text-3xl font-bold text-black">{metrics?.totalScans}</p>
+                <div className="space-y-1 lg:space-y-2">
+                  <p className="text-gray-600 text-xs lg:text-sm font-medium">Total Scans</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-black">{metrics?.totalScans}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-green-600 text-sm font-medium">0%</span>
+                    <span className="text-green-600 text-xs lg:text-sm font-medium">0%</span>
                   </div>
                 </div>
-                <div className="bg-black bg-opacity-10 p-3 rounded-lg">
-                  <Eye className="h-8 w-8 text-black" />
+                <div className="bg-black bg-opacity-10 p-2 lg:p-3 rounded-lg">
+                  <Eye className="h-6 w-6 lg:h-8 lg:w-8 text-black" />
                 </div>
               </div>
             </CardContent>
@@ -662,24 +662,24 @@ export default function AnalyticsDashboard() {
         {/* Recent Activity Table */}
         <Card className="border-2 border-gray-200 shadow-lg">
           <CardHeader className="bg-gray-50 border-b border-gray-200">
-            <CardTitle className="text-xl text-black flex items-center gap-2">
+            <CardTitle className="text-lg lg:text-xl text-black flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Recent Scan Activity
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-gray-600 text-sm lg:text-base">
               Latest prompt scanning results and detections
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm lg:text-base">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left p-4 font-semibold text-black">Timestamp</th>
-                    <th className="text-left p-4 font-semibold text-black">Prompt Type</th>
-                    <th className="text-left p-4 font-semibold text-black">Status</th>
-                    <th className="text-left p-4 font-semibold text-black">Severity</th>
-                    <th className="text-left p-4 font-semibold text-black">Response Time</th>
+                    <th className="text-left p-3 lg:p-4 font-semibold text-black whitespace-nowrap">Timestamp</th>
+                    <th className="text-left p-3 lg:p-4 font-semibold text-black whitespace-nowrap">Prompt Type</th>
+                    <th className="text-left p-3 lg:p-4 font-semibold text-black whitespace-nowrap">Status</th>
+                    <th className="text-left p-3 lg:p-4 font-semibold text-black whitespace-nowrap">Severity</th>
+                    <th className="text-left p-3 lg:p-4 font-semibold text-black whitespace-nowrap">Response Time</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -692,9 +692,9 @@ export default function AnalyticsDashboard() {
                     { time: '14:21:33', type: 'Text Analysis', status: 'Clean', severity: '-', responseTime: '124ms' },
                   ].map((item, index) => (
                     <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="p-4 text-gray-600 font-mono text-sm">{item.time}</td>
-                      <td className="p-4 text-black">{item.type}</td>
-                      <td className="p-4">
+                      <td className="p-3 lg:p-4 text-gray-600 font-mono text-xs lg:text-sm whitespace-nowrap">{item.time}</td>
+                      <td className="p-3 lg:p-4 text-black whitespace-nowrap">{item.type}</td>
+                      <td className="p-3 lg:p-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                           item.status === 'Clean' 
                             ? 'bg-green-100 text-green-800' 
@@ -703,7 +703,7 @@ export default function AnalyticsDashboard() {
                           {item.status}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className="p-3 lg:p-4 whitespace-nowrap">
                         {item.severity !== '-' ? (
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             item.severity === 'Critical' ? 'bg-red-100 text-red-800' :
@@ -716,7 +716,7 @@ export default function AnalyticsDashboard() {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="p-4 text-gray-600 font-mono text-sm">{item.responseTime}</td>
+                      <td className="p-3 lg:p-4 text-gray-600 font-mono text-xs lg:text-sm whitespace-nowrap">{item.responseTime}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -726,8 +726,8 @@ export default function AnalyticsDashboard() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center py-8 border-t border-gray-200">
-          <p className="text-gray-500 text-sm">
+        <div className="text-center py-6 lg:py-8 border-t border-gray-200">
+          <p className="text-gray-500 text-xs lg:text-sm">
             Last updated: {lastUpdated.toLocaleString()} • Data refreshed every 30 seconds
           </p>
         </div>

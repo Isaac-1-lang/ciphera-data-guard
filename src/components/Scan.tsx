@@ -459,58 +459,58 @@ export default function ScanComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-accent/10 p-6 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-accent/10 p-4 lg:p-6 space-y-6 lg:space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
-          <div className="p-3 bg-gradient-to-r from-primary to-primary-glow rounded-2xl">
-            <Scan className="h-8 w-8 text-primary-foreground" />
+          <div className="p-2 lg:p-3 bg-gradient-to-r from-primary to-primary-glow rounded-2xl">
+            <Scan className="h-6 w-6 lg:h-8 lg:w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+          <h1 className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
             Scan & Protect
           </h1>
         </div>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-base lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
           Secure your data by scanning text and files for sensitive information before sharing
         </p>
       </div>
 
       {/* Scan Options */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Text Scanner */}
         <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl">
+          <CardHeader className="p-4 lg:p-6">
+            <CardTitle className="flex items-center gap-3 text-lg lg:text-xl">
               <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl">
-                <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-blue-600 dark:text-blue-400" />
               </div>
               Text Scanner
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-sm lg:text-base">
               Scan text content for sensitive information
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 lg:p-6">
             <Textarea
               placeholder="Enter or paste text to scan for sensitive information..."
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              className="min-h-[200px] resize-none"
+              className="min-h-[150px] lg:min-h-[200px] resize-none"
               disabled={isScanning}
             />
             <Button 
               onClick={handleTextScan}
               disabled={isScanning || !textInput.trim()}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              className="w-full bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-primary-foreground font-semibold py-2 lg:py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-sm lg:text-base"
             >
               {isScanning ? (
                 <>
-                  <Scan className="h-5 w-5 mr-2 animate-spin" />
+                  <Scan className="h-4 w-4 lg:h-5 lg:w-5 mr-2 animate-spin" />
                   Scanning...
                 </>
               ) : (
                 <>
-                  <Shield className="h-5 w-5 mr-2" />
+                  <Shield className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                   Scan Text
                 </>
               )}
@@ -520,30 +520,30 @@ export default function ScanComponent() {
 
         {/* File Scanner */}
         <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl">
+          <CardHeader className="p-4 lg:p-6">
+            <CardTitle className="flex items-center gap-3 text-lg lg:text-xl">
               <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl">
-                <Upload className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <Upload className="h-5 w-5 lg:h-6 lg:w-6 text-green-600 dark:text-green-400" />
               </div>
               File Scanner
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-sm lg:text-base">
               Upload and scan documents for hidden sensitive data
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 lg:p-6">
             <div
-              className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-accent transition-colors duration-300 cursor-pointer"
+              className="border-2 border-dashed border-border rounded-xl p-6 lg:p-8 text-center hover:border-accent transition-colors duration-300 cursor-pointer"
               onClick={() => {
                 if (!isScanning) fileInputRef.current?.click();
               }}
             >
-              <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-muted-foreground mx-auto mb-3 lg:mb-4" />
               <div className="space-y-2">
-                <p className="text-lg font-medium text-foreground">
+                <p className="text-base lg:text-lg font-medium text-foreground">
                   {selectedFile ? selectedFile.name : 'Drop file here or click to browse'}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs lg:text-sm text-muted-foreground">
                   Supports PDF, DOC, DOCX, TXT, and image files
                 </p>
                 <input
@@ -556,7 +556,7 @@ export default function ScanComponent() {
                 />
                 <Button
                   variant="outline"
-                  className="cursor-pointer"
+                  className="cursor-pointer text-sm lg:text-base"
                   disabled={isScanning}
                   onClick={(e) => {
                     e.preventDefault();
@@ -698,13 +698,13 @@ export default function ScanComponent() {
       )}
 
       {/* Quick Stats */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-foreground">Quick Stats</h2>
-        <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Quick Stats</h2>
+        <div className="w-full sm:w-auto flex flex-col xs:flex-row gap-2 sm:gap-3">
           <Button 
             variant="outline" 
             onClick={loadStats}
-            className="px-4 py-2 rounded-xl"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl text-sm sm:text-base"
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Refresh Stats
@@ -712,20 +712,20 @@ export default function ScanComponent() {
           <Button 
             variant="outline" 
             onClick={exportStatsToPDF}
-            className="px-4 py-2 rounded-xl"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl text-sm sm:text-base"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Stats
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl w-fit mx-auto mb-4">
-              <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
               {stats ? stats.totalScans : (
                 <div className="animate-pulse bg-muted h-8 w-16 rounded mx-auto"></div>
               )}
@@ -737,9 +737,9 @@ export default function ScanComponent() {
         <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl w-fit mx-auto mb-4">
-              <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
               {stats ? `${stats.completionRate}%` : (
                 <div className="animate-pulse bg-muted h-8 w-16 rounded mx-auto"></div>
               )}
@@ -751,9 +751,9 @@ export default function ScanComponent() {
         <Card className="border-0 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6 text-center">
             <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl w-fit mx-auto mb-4">
-              <Clock className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
               {stats ? (stats.avgScanTime ? `${stats.avgScanTime}ms` : '0ms') : (
                 <div className="animate-pulse bg-muted h-8 w-16 rounded mx-auto"></div>
               )}

@@ -23,21 +23,21 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
 
   return (
     <Card className="w-full max-w-md bg-gradient-card shadow-elegant border-border/50 animate-fade-in">
-      <CardHeader className="text-center space-y-2">
+      <CardHeader className="text-center space-y-2 px-6 pt-6 pb-4">
         <div className="mx-auto mb-4 p-3 bg-gradient-primary rounded-full w-fit">
-          <Shield className="h-8 w-8 text-primary-foreground" />
+          <Shield className="h-6 w-6 lg:h-8 lg:w-8 text-primary-foreground" />
         </div>
-        <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <CardTitle className="text-xl lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           Welcome to Ciphera
         </CardTitle>
-        <CardDescription className="text-muted-foreground">
+        <CardDescription className="text-muted-foreground text-sm lg:text-base">
           Protect your sensitive data with AI-powered security
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 pb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="text">Email or Username</Label>
+            <Label htmlFor="email" className="text-sm lg:text-base">Email or Username</Label>
             <Input
               id="email"
               type="email"
@@ -45,11 +45,11 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-background/50 border-border/60 focus:border-accent"
+              className="bg-background/50 border-border/60 focus:border-accent h-10 lg:h-11"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm lg:text-base">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -58,7 +58,7 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-background/50 border-border/60 focus:border-accent pr-10"
+                className="bg-background/50 border-border/60 focus:border-accent pr-10 h-10 lg:h-11"
               />
               <Button
                 type="button"
@@ -79,7 +79,7 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
             type="submit"
             variant="security"
             size="lg"
-            className="w-full"
+            className="w-full h-10 lg:h-11 mt-6"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign In"}
@@ -90,7 +90,7 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
             Don't have an account?{" "}
             <Button
               variant="link"
-              className="p-0 h-auto font-semibold text-accent hover:text-accent-glow"
+              className="p-0 h-auto font-semibold text-accent hover:text-accent-glow text-sm"
               onClick={onToggleForm}
             >
               Sign up
