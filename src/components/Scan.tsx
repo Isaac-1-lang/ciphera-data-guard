@@ -390,7 +390,7 @@ export default function ScanComponent() {
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl w-fit mx-auto mb-4">
               <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">1,247</h3>
+            <h3 className="text-2xl font-bold text-foreground mb-2">5</h3>
             <p className="text-muted-foreground">Total Scans Today</p>
           </CardContent>
         </Card>
