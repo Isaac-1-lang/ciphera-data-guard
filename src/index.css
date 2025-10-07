@@ -168,3 +168,154 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm lg:text-base;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm lg:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base lg:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg lg:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl lg:text-2xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-2xl lg:text-3xl;
+  }
+  
+  .text-responsive-3xl {
+    @apply text-3xl lg:text-4xl;
+  }
+  
+  .text-responsive-4xl {
+    @apply text-4xl lg:text-5xl;
+  }
+  
+  /* Responsive spacing utilities */
+  .space-responsive-sm {
+    @apply space-y-2 lg:space-y-3;
+  }
+  
+  .space-responsive-base {
+    @apply space-y-3 lg:space-y-4;
+  }
+  
+  .space-responsive-lg {
+    @apply space-y-4 lg:space-y-6;
+  }
+  
+  .space-responsive-xl {
+    @apply space-y-6 lg:space-y-8;
+  }
+  
+  /* Responsive padding utilities */
+  .p-responsive-sm {
+    @apply p-3 lg:p-4;
+  }
+  
+  .p-responsive-base {
+    @apply p-4 lg:p-6;
+  }
+  
+  .p-responsive-lg {
+    @apply p-6 lg:p-8;
+  }
+  
+  /* Responsive margin utilities */
+  .m-responsive-sm {
+    @apply m-2 lg:m-3;
+  }
+  
+  .m-responsive-base {
+    @apply m-3 lg:m-4;
+  }
+  
+  .m-responsive-lg {
+    @apply m-4 lg:m-6;
+  }
+  
+  /* Responsive gap utilities */
+  .gap-responsive-sm {
+    @apply gap-2 lg:gap-3;
+  }
+  
+  .gap-responsive-base {
+    @apply gap-3 lg:gap-4;
+  }
+  
+  .gap-responsive-lg {
+    @apply gap-4 lg:gap-6;
+  }
+  
+  .gap-responsive-xl {
+    @apply gap-6 lg:gap-8;
+  }
+  
+  /* Responsive height utilities */
+  .h-responsive-sm {
+    @apply h-8 lg:h-10;
+  }
+  
+  .h-responsive-base {
+    @apply h-10 lg:h-11;
+  }
+  
+  .h-responsive-lg {
+    @apply h-11 lg:h-12;
+  }
+  
+  /* Responsive width utilities */
+  .w-responsive-sm {
+    @apply w-8 lg:w-10;
+  }
+  
+  .w-responsive-base {
+    @apply w-10 lg:w-11;
+  }
+  
+  .w-responsive-lg {
+    @apply w-11 lg:w-12;
+  }
+  
+  /* Responsive icon utilities */
+  .icon-responsive-sm {
+    @apply h-4 w-4 lg:h-5 lg:w-5;
+  }
+  
+  .icon-responsive-base {
+    @apply h-5 w-5 lg:h-6 lg:w-6;
+  }
+  
+  .icon-responsive-lg {
+    @apply h-6 w-6 lg:h-8 lg:w-8;
+  }
+  
+  /* Responsive avatar utilities */
+  .avatar-responsive-sm {
+    @apply h-8 w-8 lg:h-10 lg:w-10;
+  }
+  
+  .avatar-responsive-base {
+    @apply h-10 w-10 lg:h-12 lg:w-12;
+  }
+  
+  .avatar-responsive-lg {
+    @apply h-12 w-12 lg:h-16 lg:w-16;
+  }
+  
+  .avatar-responsive-xl {
+    @apply h-16 w-16 lg:h-20 lg:w-20;
+  }
+}
