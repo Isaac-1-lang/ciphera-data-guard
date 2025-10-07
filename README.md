@@ -53,5 +53,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For questions or support, contact [Your Name] at [your-email@example.com].
+For questions or support, contact NIYOBYOSE Isaac Precieux at [isaprecieux112@gmail.com].
 
